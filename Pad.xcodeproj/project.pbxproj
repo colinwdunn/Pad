@@ -9,10 +9,11 @@
 /* Begin PBXBuildFile section */
 		6282F1711AD8BED2003114F0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1701AD8BED2003114F0 /* AppDelegate.swift */; };
 		6282F1731AD8BED2003114F0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1721AD8BED2003114F0 /* ViewController.swift */; };
-		6282F1761AD8BED2003114F0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6282F1741AD8BED2003114F0 /* Main.storyboard */; };
 		6282F1781AD8BED2003114F0 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6282F1771AD8BED2003114F0 /* Images.xcassets */; };
 		6282F17B1AD8BED2003114F0 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6282F1791AD8BED2003114F0 /* LaunchScreen.xib */; };
 		6282F1871AD8BED2003114F0 /* PadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1861AD8BED2003114F0 /* PadTests.swift */; };
+		6282F1911AD8C2B5003114F0 /* NoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1901AD8C2B5003114F0 /* NoteViewController.swift */; };
+		6282F1941AD8CC4B003114F0 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6282F1931AD8CC4B003114F0 /* CloudKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -30,12 +31,14 @@
 		6282F16F1AD8BED2003114F0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6282F1701AD8BED2003114F0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6282F1721AD8BED2003114F0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		6282F1751AD8BED2003114F0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		6282F1771AD8BED2003114F0 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		6282F17A1AD8BED2003114F0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		6282F1801AD8BED2003114F0 /* PadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6282F1851AD8BED2003114F0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6282F1861AD8BED2003114F0 /* PadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PadTests.swift; sourceTree = "<group>"; };
+		6282F1901AD8C2B5003114F0 /* NoteViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoteViewController.swift; sourceTree = "<group>"; };
+		6282F1921AD8CC47003114F0 /* Pad.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Pad.entitlements; sourceTree = "<group>"; };
+		6282F1931AD8CC4B003114F0 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -43,6 +46,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6282F1941AD8CC4B003114F0 /* CloudKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +63,7 @@
 		6282F1621AD8BED2003114F0 = {
 			isa = PBXGroup;
 			children = (
+				6282F1931AD8CC4B003114F0 /* CloudKit.framework */,
 				6282F16D1AD8BED2003114F0 /* Pad */,
 				6282F1831AD8BED2003114F0 /* PadTests */,
 				6282F16C1AD8BED2003114F0 /* Products */,
@@ -77,9 +82,10 @@
 		6282F16D1AD8BED2003114F0 /* Pad */ = {
 			isa = PBXGroup;
 			children = (
+				6282F1921AD8CC47003114F0 /* Pad.entitlements */,
 				6282F1701AD8BED2003114F0 /* AppDelegate.swift */,
 				6282F1721AD8BED2003114F0 /* ViewController.swift */,
-				6282F1741AD8BED2003114F0 /* Main.storyboard */,
+				6282F1901AD8C2B5003114F0 /* NoteViewController.swift */,
 				6282F1771AD8BED2003114F0 /* Images.xcassets */,
 				6282F1791AD8BED2003114F0 /* LaunchScreen.xib */,
 				6282F16E1AD8BED2003114F0 /* Supporting Files */,
@@ -161,6 +167,12 @@
 				TargetAttributes = {
 					6282F16A1AD8BED2003114F0 = {
 						CreatedOnToolsVersion = 6.3;
+						DevelopmentTeam = 6NP8N28385;
+						SystemCapabilities = {
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
 					};
 					6282F17F1AD8BED2003114F0 = {
 						CreatedOnToolsVersion = 6.3;
@@ -192,7 +204,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6282F1761AD8BED2003114F0 /* Main.storyboard in Resources */,
 				6282F17B1AD8BED2003114F0 /* LaunchScreen.xib in Resources */,
 				6282F1781AD8BED2003114F0 /* Images.xcassets in Resources */,
 			);
@@ -213,6 +224,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6282F1731AD8BED2003114F0 /* ViewController.swift in Sources */,
+				6282F1911AD8C2B5003114F0 /* NoteViewController.swift in Sources */,
 				6282F1711AD8BED2003114F0 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -236,14 +248,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		6282F1741AD8BED2003114F0 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				6282F1751AD8BED2003114F0 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		6282F1791AD8BED2003114F0 /* LaunchScreen.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -342,9 +346,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Pad/Pad.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = Pad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -352,9 +361,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Pad/Pad.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = Pad/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
