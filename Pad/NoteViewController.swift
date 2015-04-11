@@ -7,15 +7,23 @@
 //
 
 import UIKit
+import CloudKit
 
 protocol NoteDelegate {
-    func didDismissNote()
+    func modifyNote(note: CKRecord)
+    func addNote(note: CKRecord)
 }
 
 class NoteViewController: UIViewController, UITextFieldDelegate {
     
     let done = UIButton()
     let textField = UITextField()
+    var note: CKRecord? {
+        didSet {
+            textField.text = note!.objectForKey("Text") as! String
+        }
+    }
+    var delegate: NoteDelegate?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,6 +49,14 @@ class NoteViewController: UIViewController, UITextFieldDelegate {
     }
     
     func handleDoneTap() {
+        if note != nil {
+            note!.setObject(textField.text, forKey: "Text")
+            delegate?.modifyNote(note!)
+        } else {
+            let note = CKRecord(recordType: Note.recordType)
+            note!.setObject(textField.text, forKey: "Text")
+            delegate?.addNote(note)
+        }
         textField.resignFirstResponder()
         dismissViewControllerAnimated(true, completion: nil)
     }
