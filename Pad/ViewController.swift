@@ -10,11 +10,11 @@ import UIKit
 import CloudKit
 
 class ViewController: UITableViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate {
-    let transitionManager = TransitionManger()
     let db = CKContainer.defaultContainer().privateCloudDatabase
-    let noteViewController = NoteViewController()
     var notes = [CKRecord]()
-
+    let transitionManager = TransitionManger()
+    let noteViewController = NoteViewController()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Note.identifier)
@@ -38,15 +38,20 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false)
     }
     
-    func presentNote(note: CKRecord) {
+    func presentNote(note: CKRecord, indexPath: NSIndexPath) {
         noteViewController.note = note
+        noteViewController.indexPath = indexPath
+        noteViewController.modalPresentationStyle = .Custom
+        noteViewController.transitioningDelegate = transitionManager
+        transitionManager.presentingController = noteViewController
         presentViewController(noteViewController, animated: true, completion: nil)
     }
     
     func handleTap() {
         println("Did tap label")
         let note = CKRecord(recordType: Note.recordType)
-        presentNote(note)
+        let indexPath = NSIndexPath(forItem: 0, inSection: 0)
+        presentNote(note, indexPath: indexPath)
     }
     
     //MARK: CloudKit
@@ -159,6 +164,6 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
 
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let note = notes[indexPath.row]
-        presentNote(note)
+        presentNote(note, indexPath: indexPath)
     }
 }

@@ -64,6 +64,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6258361B1AD9F55C00C3E46E /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				6282F1951AD8DF31003114F0 /* Note.swift */,
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
+		6258361C1AD9F56C00C3E46E /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				6282F1721AD8BED2003114F0 /* ViewController.swift */,
+				6282F1901AD8C2B5003114F0 /* NoteViewController.swift */,
+			);
+			name = Controllers;
+			sourceTree = "<group>";
+		};
 		6282F1621AD8BED2003114F0 = {
 			isa = PBXGroup;
 			children = (
@@ -88,10 +105,9 @@
 			children = (
 				6282F1921AD8CC47003114F0 /* Pad.entitlements */,
 				6282F1701AD8BED2003114F0 /* AppDelegate.swift */,
-				6282F1721AD8BED2003114F0 /* ViewController.swift */,
+				6258361C1AD9F56C00C3E46E /* Controllers */,
+				6258361B1AD9F55C00C3E46E /* Model */,
 				625836191AD9ED2300C3E46E /* TransitionManager.swift */,
-				6282F1901AD8C2B5003114F0 /* NoteViewController.swift */,
-				6282F1951AD8DF31003114F0 /* Note.swift */,
 				6282F1771AD8BED2003114F0 /* Images.xcassets */,
 				6282F1791AD8BED2003114F0 /* LaunchScreen.xib */,
 				6282F16E1AD8BED2003114F0 /* Supporting Files */,

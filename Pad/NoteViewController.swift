@@ -19,6 +19,7 @@ class NoteViewController: UIViewController, UITextFieldDelegate {
     
     let done = UIButton()
     let textField = UITextField()
+    var indexPath: NSIndexPath!
     var note: CKRecord! {
         didSet {
             if let text = note.objectForKey("Text") as? String {
@@ -28,8 +29,8 @@ class NoteViewController: UIViewController, UITextFieldDelegate {
             }
         }
     }
-    var isNewNote = false
     var delegate: NoteDelegate?
+    let window = UIScreen.mainScreen().bounds
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -86,11 +87,16 @@ class NoteViewController: UIViewController, UITextFieldDelegate {
     
     func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
-            done.frame.origin.y = view.bounds.height - keyboardSize.height - 40
+            done.frame.origin.y = window.height - keyboardSize.height - 40
+            println("Adjusted done frame")
+            println(done.frame)
+            println(keyboardSize.size.height)
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {
-        done.frame.origin.y = view.bounds.height - 40
+        done.frame.origin.y = window.height - 40
+        println("Adjusted done frame")
+        println(done.frame)
     }
 }

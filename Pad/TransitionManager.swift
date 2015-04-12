@@ -18,6 +18,8 @@ class TransitionManger: UIPercentDrivenInteractiveTransition, UIViewControllerAn
             self.presentingController.view.addGestureRecognizer(self.pinchGesture)
         }
     }
+    var selectedCellPosition: CGRect!
+    let window = UIScreen.mainScreen().bounds
     
     private var isInteractive = false
     private var pinchGesture = UIPinchGestureRecognizer()
@@ -28,18 +30,24 @@ class TransitionManger: UIPercentDrivenInteractiveTransition, UIViewControllerAn
         let fromViewController = transitionContext.viewControllerForKey(UITransitionContextFromViewControllerKey)
         
         if isPresenting {
+            let viewControler = fromViewController as! ViewController
+            let noteViewController = toViewController as! NoteViewController
+            let indexPath = noteViewController.indexPath
+            let selectedCellRect = viewControler.tableView.rectForRowAtIndexPath(indexPath)
+            selectedCellPosition = viewControler.tableView.convertRect(selectedCellRect, toView: viewControler.tableView.superview!)
+            
             containerView.addSubview(toViewController!.view)
-            toViewController?.view.transform = CGAffineTransformMakeScale(0, 0)
+            toViewController?.view.frame = selectedCellPosition
             
             UIView.animateWithDuration(transitionDuration(transitionContext), animations: { () -> Void in
-                toViewController?.view.transform = CGAffineTransformMakeScale(1, 1)
+                toViewController?.view.frame = window
                 
                 }) { (finished: Bool) -> Void in
                     transitionContext.completeTransition(true)
             }
         } else {
             UIView.animateWithDuration(transitionDuration(transitionContext), animations: { () -> Void in
-                fromViewController?.view.transform = CGAffineTransformMakeScale(0.01, 0.01)
+                fromViewController?.view.frame = selectedCellPosition
                 
                 }) { (finished: Bool) -> Void in
                     if transitionContext.transitionWasCancelled() {
