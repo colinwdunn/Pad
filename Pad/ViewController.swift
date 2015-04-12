@@ -9,50 +9,51 @@
 import UIKit
 import CloudKit
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate {
+class ViewController: UITableViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate {
+    let transitionManager = TransitionManger()
     let db = CKContainer.defaultContainer().privateCloudDatabase
     let noteViewController = NoteViewController()
-    var tableView: UITableView!
-    var newButton: UIButton!
     var notes = [CKRecord]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        tableView = UITableView(frame: CGRectZero, style: .Plain)
         tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Note.identifier)
         tableView.dataSource = self
         tableView.delegate = self
-        view.addSubview(tableView)
-        
-        newButton = UIButton()
-        newButton.addTarget(self, action: "handleButtonTap", forControlEvents: .TouchUpInside)
-        newButton.setTitle("New", forState: .Normal)
-        newButton.setTitleColor(UIColor.blueColor(), forState: .Normal)
-        view.addSubview(newButton)
-        
+        tableView.rowHeight = 50
+        noteViewController.delegate = self
         loadItems()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        tableView.frame = view.bounds
-        newButton.frame = CGRectMake(view.bounds.width - 100, 10, 100, 25)
     }
     
     override func prefersStatusBarHidden() -> Bool {
         return true
     }
     
-    func handleButtonTap() {
-        noteViewController.textField.text = nil
-        noteViewController.delegate = self
+    func scrollToLastCell() {
+        let lastCell = NSIndexPath(forItem: notes.count - 1, inSection: 0)
+        tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false)
+    }
+    
+    func presentNote(note: CKRecord) {
+        noteViewController.note = note
         presentViewController(noteViewController, animated: true, completion: nil)
+    }
+    
+    func handleTap() {
+        println("Did tap label")
+        let note = CKRecord(recordType: Note.recordType)
+        presentNote(note)
     }
     
     //MARK: CloudKit
     func loadItems() {
         let predicate = NSPredicate(value: true)
         let query = CKQuery(recordType: Note.recordType, predicate: predicate)
+        query.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
         db.performQuery(query, inZoneWithID: nil) { (results, error) -> Void in
             if error != nil {
                 println(error.localizedDescription)
@@ -60,7 +61,9 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
             
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 self.notes = results as! [CKRecord]
+                let lastCell = NSIndexPath(forItem: self.notes.count - 1, inSection: 0)
                 self.tableView.reloadData()
+                self.scrollToLastCell()
             })
         }
     }
@@ -75,6 +78,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 self.notes.append(record)
                 let indexPath = NSIndexPath(forRow: self.notes.count - 1, inSection: 0)
                 self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                self.scrollToLastCell()
             })
         })
     }
@@ -96,6 +100,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func modifyNote(note: CKRecord) {
+        //TODO: remove note if string is empty
         let operation = CKModifyRecordsOperation(recordsToSave: [note], recordIDsToDelete: nil)
         operation.modifyRecordsCompletionBlock = { saved, deleted, error in
             if error != nil {
@@ -112,14 +117,13 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
         db.addOperation(operation)
     }
-}
 
-extension ViewController: UITableViewDataSource {
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    //MARK: UITableViewDataSource
+    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return notes.count
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
         cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
         let text = notes[indexPath.row].objectForKey("Text") as! String
@@ -131,17 +135,30 @@ extension ViewController: UITableViewDataSource {
         return cell
     }
     
-    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let footerView = UIView(frame: CGRectMake(0, 0, view.frame.width, tableView.rowHeight))
+        footerView.backgroundColor = UIColor.whiteColor()
+        let label = UILabel(frame: CGRectMake(16, 0, view.frame.width - 16, tableView.rowHeight))
+        label.text = "Write something…"
+        label.userInteractionEnabled = true
+        let tapGesture = UITapGestureRecognizer(target: self, action: "handleTap")
+        label.addGestureRecognizer(tapGesture)
+        footerView.addSubview(label)
+        return footerView
+    }
+    
+    override func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return tableView.rowHeight
+    }
+    
+    //MARK: UITableViewDelegate
+    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         let note = notes[indexPath.row]
         removeNote(note)
     }
-}
 
-extension ViewController: UITableViewDelegate {
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let text = notes[indexPath.row].objectForKey("Text") as! String
-        noteViewController.delegate = self
-        noteViewController.note = notes[indexPath.row]
-        presentViewController(noteViewController, animated: true, completion: nil)
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        let note = notes[indexPath.row]
+        presentNote(note)
     }
 }
