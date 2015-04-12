@@ -137,6 +137,11 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         dateFormatter.dateFormat = "EEEE, MMMM d"
         cell.textLabel!.text = text
         cell.detailTextLabel!.text = dateFormatter.stringFromDate(date)
+        
+//        let highlightView = UIView()
+//        highlightView.backgroundColor = UIColor.clearColor()
+//        cell.selectedBackgroundView = highlightView
+        
         return cell
     }
     
@@ -165,5 +170,6 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let note = notes[indexPath.row]
         presentNote(note, indexPath: indexPath)
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
 }

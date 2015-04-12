@@ -26,8 +26,8 @@ class TransitionManger: UIPercentDrivenInteractiveTransition, UIViewControllerAn
     
     func animateTransition(transitionContext: UIViewControllerContextTransitioning) {
         let containerView = transitionContext.containerView()
-        let toViewController = transitionContext.viewControllerForKey(UITransitionContextToViewControllerKey)
-        let fromViewController = transitionContext.viewControllerForKey(UITransitionContextFromViewControllerKey)
+        let toViewController = transitionContext.viewControllerForKey(UITransitionContextToViewControllerKey)!
+        let fromViewController = transitionContext.viewControllerForKey(UITransitionContextFromViewControllerKey)!
         
         if isPresenting {
             let viewControler = fromViewController as! ViewController
@@ -36,26 +36,26 @@ class TransitionManger: UIPercentDrivenInteractiveTransition, UIViewControllerAn
             let selectedCellRect = viewControler.tableView.rectForRowAtIndexPath(indexPath)
             selectedCellPosition = viewControler.tableView.convertRect(selectedCellRect, toView: viewControler.tableView.superview!)
             
-            containerView.addSubview(toViewController!.view)
-            toViewController?.view.frame = selectedCellPosition
+            //Setup views for animation
+            containerView.addSubview(toViewController.view)
+            toViewController.view.frame = selectedCellPosition
             
-            UIView.animateWithDuration(transitionDuration(transitionContext), animations: { () -> Void in
-                toViewController?.view.frame = window
+            UIView.animateWithDuration(transitionDuration(transitionContext), delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: 8, options: nil, animations: { () -> Void in
+                toViewController.view.frame = self.window
                 
                 }) { (finished: Bool) -> Void in
                     transitionContext.completeTransition(true)
             }
         } else {
-            UIView.animateWithDuration(transitionDuration(transitionContext), animations: { () -> Void in
-                fromViewController?.view.frame = selectedCellPosition
-                
-                }) { (finished: Bool) -> Void in
-                    if transitionContext.transitionWasCancelled() {
-                        transitionContext.completeTransition(false)
-                    } else {
-                        transitionContext.completeTransition(true)
-                        fromViewController?.view.removeFromSuperview()
-                    }
+            UIView.animateWithDuration(transitionDuration(transitionContext), delay: 0, usingSpringWithDamping: 0.9, initialSpringVelocity: 8, options: nil, animations: { () -> Void in
+                fromViewController.view.frame = self.selectedCellPosition
+            }) { (finished: Bool) -> Void in
+                if transitionContext.transitionWasCancelled() {
+                    transitionContext.completeTransition(false)
+                } else {
+                    transitionContext.completeTransition(true)
+                    fromViewController.view.removeFromSuperview()
+                }
             }
         }
     }
