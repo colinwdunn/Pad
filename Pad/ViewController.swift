@@ -30,6 +30,7 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         tableView.rowHeight = 50
         noteViewController.delegate = self
         notes = unarchiveNotes()
+        scrollToLastCell()
         loadItems()
     }
     
@@ -93,7 +94,7 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     func addNote(note: CKRecord) {
         self.notes.append(note)
         let indexPath = NSIndexPath(forRow: self.notes.count - 1, inSection: 0)
-        self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .None)
         self.archiveNotes(self.notes)
         self.scrollToLastCell()
         
