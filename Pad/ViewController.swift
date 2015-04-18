@@ -38,14 +38,12 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         if let data = defaults.objectForKey(kNotesKey) as? NSData {
             notes = NSKeyedUnarchiver.unarchiveObjectWithData(data) as! [CKRecord]
         }
-        println("Restored from disk")
         return notes
     }
     
     func archiveNotes(notes: [CKRecord]) {
         let data = NSKeyedArchiver.archivedDataWithRootObject(self.notes)
         self.defaults.setObject(data, forKey: self.kNotesKey)
-        println("Saved to disk")
     }
     
     override func viewDidLayoutSubviews() {
@@ -93,52 +91,46 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     }
     
     func addNote(note: CKRecord) {
+        self.notes.append(note)
+        let indexPath = NSIndexPath(forRow: self.notes.count - 1, inSection: 0)
+        self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        self.archiveNotes(self.notes)
+        self.scrollToLastCell()
+        
         db.saveRecord(note, completionHandler: { (record, error) -> Void in
             if error != nil {
                 println(error.localizedDescription)
             }
-            
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                self.notes.append(record)
-                let indexPath = NSIndexPath(forRow: self.notes.count - 1, inSection: 0)
-                self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
-                self.archiveNotes(self.notes)
-                self.scrollToLastCell()
-            })
         })
     }
     
     func removeNote(note: CKRecord) {
+        if let index = find(self.notes, note) {
+            self.notes.removeAtIndex(index)
+            let indexPath = NSIndexPath(forRow: index, inSection: 0)
+            self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .None)
+            self.archiveNotes(self.notes)
+        }
+        
         self.db.deleteRecordWithID(note.recordID) { (record, error) -> Void in
             if error != nil {
                 println(error.localizedDescription)
-            }
-            
-            dispatch_async(dispatch_get_main_queue()) { () -> Void in
-                if let index = find(self.notes, note) {
-                    self.notes.removeAtIndex(index)
-                    let indexPath = NSIndexPath(forRow: index, inSection: 0)
-                    self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .None)
-                    self.archiveNotes(self.notes)
-                }
             }
         }
     }
     
     func modifyNote(note: CKRecord) {
+        if let index = find(self.notes, note) {
+            let indexPath = NSIndexPath(forRow: index, inSection: 0)
+            self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .None)
+            self.archiveNotes(self.notes)
+        }
+        
         let operation = CKModifyRecordsOperation(recordsToSave: [note], recordIDsToDelete: nil)
         operation.modifyRecordsCompletionBlock = { saved, deleted, error in
             if error != nil {
                 println(error.localizedDescription)
             }
-            
-            dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                if let index = find(self.notes, note) {
-                    let indexPath = NSIndexPath(forRow: index, inSection: 0)
-                    self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .None)
-                    self.archiveNotes(self.notes)
-                }
-            })
         }
         db.addOperation(operation)
     }
@@ -162,11 +154,11 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
         cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
         let text = notes[indexPath.row].objectForKey("Text") as! String
-        let date = notes[indexPath.row].objectForKey("creationDate") as! NSDate
+//        let date = notes[indexPath.row].objectForKey("creationDate") as! NSDate
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "EEEE, MMMM d"
         cell.textLabel!.text = text
-        cell.detailTextLabel!.text = dateFormatter.stringFromDate(date)
+//        cell.detailTextLabel!.text = dateFormatter.stringFromDate(date)
         
         return cell
     }
