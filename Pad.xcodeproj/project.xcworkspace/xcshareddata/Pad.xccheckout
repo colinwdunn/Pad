@@ -7,14 +7,14 @@
 	<key>IDESourceControlProjectIdentifier</key>
 	<string>A20F7AF0-5EAC-4F20-AD79-756170310C78</string>
 	<key>IDESourceControlProjectName</key>
-	<string>project</string>
+	<string>Pad</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
 		<key>D2B31F395A42CE126A207AE72A6EA9FDC6554074</key>
 		<string>https://github.com/colinwdunn/Pad.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
-	<string>Pad.xcodeproj/project.xcworkspace</string>
+	<string>Pad.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>D2B31F395A42CE126A207AE72A6EA9FDC6554074</key>

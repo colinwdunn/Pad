@@ -9,20 +9,43 @@
 import UIKit
 import CloudKit
 
-class ViewController: UITableViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate {
+class ViewController: UITableViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate, NSCoding {
     let db = CKContainer.defaultContainer().privateCloudDatabase
+    let defaults = NSUserDefaults.standardUserDefaults()
     var notes = [CKRecord]()
-    let transitionManager = TransitionManger()
     let noteViewController = NoteViewController()
+    let kNotesKey = "Notes"
+    
+    struct note {
+        var date: NSDate
+        var text: String
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationController?.setNavigationBarHidden(true, animated: false)
         tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Note.identifier)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = 50
         noteViewController.delegate = self
+        notes = unarchiveNotes()
         loadItems()
+    }
+    
+    func unarchiveNotes() -> [CKRecord] {
+        var notes = [CKRecord]()
+        if let data = defaults.objectForKey(kNotesKey) as? NSData {
+            notes = NSKeyedUnarchiver.unarchiveObjectWithData(data) as! [CKRecord]
+        }
+        println("Restored from disk")
+        return notes
+    }
+    
+    func archiveNotes(notes: [CKRecord]) {
+        let data = NSKeyedArchiver.archivedDataWithRootObject(self.notes)
+        self.defaults.setObject(data, forKey: self.kNotesKey)
+        println("Saved to disk")
     }
     
     override func viewDidLayoutSubviews() {
@@ -34,24 +57,20 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     }
     
     func scrollToLastCell() {
-        let lastCell = NSIndexPath(forItem: notes.count - 1, inSection: 0)
-        tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false)
+        if notes.count > 0 {
+            let lastCell = NSIndexPath(forItem: notes.count - 1, inSection: 0)
+            tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false)
+        }
     }
     
-    func presentNote(note: CKRecord, indexPath: NSIndexPath) {
+    func presentNote(note: CKRecord) {
         noteViewController.note = note
-        noteViewController.indexPath = indexPath
-        noteViewController.modalPresentationStyle = .Custom
-        noteViewController.transitioningDelegate = transitionManager
-        transitionManager.presentingController = noteViewController
-        presentViewController(noteViewController, animated: true, completion: nil)
+        navigationController?.pushViewController(noteViewController, animated: true)
     }
     
     func handleTap() {
-        println("Did tap label")
         let note = CKRecord(recordType: Note.recordType)
-        let indexPath = NSIndexPath(forItem: 0, inSection: 0)
-        presentNote(note, indexPath: indexPath)
+        presentNote(note)
     }
     
     //MARK: CloudKit
@@ -66,7 +85,7 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
             
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 self.notes = results as! [CKRecord]
-                let lastCell = NSIndexPath(forItem: self.notes.count - 1, inSection: 0)
+                self.archiveNotes(self.notes)
                 self.tableView.reloadData()
                 self.scrollToLastCell()
             })
@@ -83,6 +102,7 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
                 self.notes.append(record)
                 let indexPath = NSIndexPath(forRow: self.notes.count - 1, inSection: 0)
                 self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                self.archiveNotes(self.notes)
                 self.scrollToLastCell()
             })
         })
@@ -98,14 +118,14 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
                 if let index = find(self.notes, note) {
                     self.notes.removeAtIndex(index)
                     let indexPath = NSIndexPath(forRow: index, inSection: 0)
-                    self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                    self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .None)
+                    self.archiveNotes(self.notes)
                 }
             }
         }
     }
     
     func modifyNote(note: CKRecord) {
-        //TODO: remove note if string is empty
         let operation = CKModifyRecordsOperation(recordsToSave: [note], recordIDsToDelete: nil)
         operation.modifyRecordsCompletionBlock = { saved, deleted, error in
             if error != nil {
@@ -113,14 +133,24 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
             }
             
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
-                self.tableView.reloadData()
                 if let index = find(self.notes, note) {
                     let indexPath = NSIndexPath(forRow: index, inSection: 0)
-                    self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                    self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .None)
+                    self.archiveNotes(self.notes)
                 }
             })
         }
         db.addOperation(operation)
+    }
+    
+    //MARK: NSCoding
+    required convenience init(coder decoder: NSCoder) {
+        self.init()
+        println(decoder.decodeObjectForKey(kNotesKey) as! [CKRecord])
+    }
+    
+    override func encodeWithCoder(coder: NSCoder) {
+        coder.encodeObject(notes, forKey: kNotesKey)
     }
 
     //MARK: UITableViewDataSource
@@ -137,10 +167,6 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         dateFormatter.dateFormat = "EEEE, MMMM d"
         cell.textLabel!.text = text
         cell.detailTextLabel!.text = dateFormatter.stringFromDate(date)
-        
-//        let highlightView = UIView()
-//        highlightView.backgroundColor = UIColor.clearColor()
-//        cell.selectedBackgroundView = highlightView
         
         return cell
     }
@@ -169,7 +195,6 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
 
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let note = notes[indexPath.row]
-        presentNote(note, indexPath: indexPath)
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        presentNote(note)
     }
 }
