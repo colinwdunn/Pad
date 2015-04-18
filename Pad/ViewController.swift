@@ -76,7 +76,7 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     func loadItems() {
         let predicate = NSPredicate(value: true)
         let query = CKQuery(recordType: Note.recordType, predicate: predicate)
-        query.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        query.sortDescriptors = [NSSortDescriptor(key: "modificationDate", ascending: true)]
         db.performQuery(query, inZoneWithID: nil) { (results, error) -> Void in
             if error != nil {
                 println(error.localizedDescription)
@@ -86,7 +86,6 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
                 self.notes = results as! [CKRecord]
                 self.archiveNotes(self.notes)
                 self.tableView.reloadData()
-                self.scrollToLastCell()
             })
         }
     }
@@ -123,7 +122,19 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     func modifyNote(note: CKRecord) {
         if let index = find(self.notes, note) {
             let indexPath = NSIndexPath(forRow: index, inSection: 0)
-            self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .None)
+            let lastPosition = NSIndexPath(forRow: notes.count - 1, inSection: 0)
+            
+            if indexPath != lastPosition {
+                UIView.setAnimationsEnabled(false)
+                tableView.moveRowAtIndexPath(indexPath, toIndexPath: lastPosition)
+                UIView.setAnimationsEnabled(true)
+                
+                notes.removeAtIndex(index)
+                notes.append(note)
+            }
+            
+            tableView.reloadRowsAtIndexPaths([lastPosition], withRowAnimation: .None)
+            
             self.archiveNotes(self.notes)
         }
         
@@ -155,12 +166,18 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
         cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
         let text = notes[indexPath.row].objectForKey("Text") as! String
-//        let date = notes[indexPath.row].objectForKey("creationDate") as! NSDate
+        
+        if let date = notes[indexPath.row].objectForKey("modificationDate") as? NSDate {
+            println("Modified date exists")
+            println(date)
+        } else {
+            println("Date does not exist")
+        }
+        
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "EEEE, MMMM d"
         cell.textLabel!.text = text
 //        cell.detailTextLabel!.text = dateFormatter.stringFromDate(date)
-        
         return cell
     }
     
