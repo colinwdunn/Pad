@@ -15,6 +15,7 @@
 		6282F1911AD8C2B5003114F0 /* NoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1901AD8C2B5003114F0 /* NoteViewController.swift */; };
 		6282F1941AD8CC4B003114F0 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6282F1931AD8CC4B003114F0 /* CloudKit.framework */; };
 		6282F1961AD8DF31003114F0 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1951AD8DF31003114F0 /* Note.swift */; };
+		629F9EC81AE3270C00699DA6 /* Composer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629F9EC71AE3270C00699DA6 /* Composer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,6 +42,7 @@
 		6282F1921AD8CC47003114F0 /* Pad.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Pad.entitlements; sourceTree = "<group>"; };
 		6282F1931AD8CC4B003114F0 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		6282F1951AD8DF31003114F0 /* Note.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
+		629F9EC71AE3270C00699DA6 /* Composer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Composer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,8 +105,9 @@
 			children = (
 				6282F1921AD8CC47003114F0 /* Pad.entitlements */,
 				6282F1701AD8BED2003114F0 /* AppDelegate.swift */,
-				6258361C1AD9F56C00C3E46E /* Controllers */,
 				6258361B1AD9F55C00C3E46E /* Model */,
+				629F9EC91AE3272A00699DA6 /* View */,
+				6258361C1AD9F56C00C3E46E /* Controllers */,
 				6282F1771AD8BED2003114F0 /* Images.xcassets */,
 				6282F1791AD8BED2003114F0 /* LaunchScreen.xib */,
 				6282F16E1AD8BED2003114F0 /* Supporting Files */,
@@ -135,6 +138,14 @@
 				6282F1851AD8BED2003114F0 /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		629F9EC91AE3272A00699DA6 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				629F9EC71AE3270C00699DA6 /* Composer.swift */,
+			);
+			name = View;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -242,6 +253,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				629F9EC81AE3270C00699DA6 /* Composer.swift in Sources */,
 				6282F1731AD8BED2003114F0 /* ViewController.swift in Sources */,
 				6282F1911AD8C2B5003114F0 /* NoteViewController.swift in Sources */,
 				6282F1711AD8BED2003114F0 /* AppDelegate.swift in Sources */,

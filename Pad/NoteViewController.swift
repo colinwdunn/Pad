@@ -18,13 +18,13 @@ protocol NoteDelegate {
 class NoteViewController: UIViewController {
     var toolbar: UIView!
     let done = UIButton()
-    let textView = UITextView()
+    let composer = Composer()
     var note: CKRecord! {
         didSet {
             if let text = note.objectForKey("Text") as? String {
-                textView.text = text
+                composer.text = text
             } else {
-                textView.text = nil
+                composer.text = nil
             }
         }
     }
@@ -38,14 +38,11 @@ class NoteViewController: UIViewController {
         let toolbarHeight:CGFloat = 50
         let padding:CGFloat = 16
         
-        textView.backgroundColor = UIColor.whiteColor()
-        textView.alwaysBounceVertical = true
-        textView.textContainerInset = UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding)
-        textView.frame = window
-        textView.frame.size.height -= toolbarHeight
-        textView.keyboardAppearance = .Dark
-        textView.font = UIFont.systemFontOfSize(18)
-        view.addSubview(textView)
+        composer.alwaysBounceVertical = true
+        composer.textContainerInset = UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding)
+        composer.frame = window
+        composer.frame.size.height -= toolbarHeight
+        view.addSubview(composer)
         
         toolbar = UIView(frame: CGRectMake(0, window.height - toolbarHeight, window.width, toolbarHeight))
         toolbar.backgroundColor = UIColor.whiteColor()
@@ -68,7 +65,7 @@ class NoteViewController: UIViewController {
     }
     
     override func viewDidAppear(animated: Bool) {
-        textView.becomeFirstResponder()
+        composer.becomeFirstResponder()
     }
     
     override func viewWillDisappear(animated: Bool) {
@@ -80,12 +77,12 @@ class NoteViewController: UIViewController {
     }
     
     func handleDoneTap() {
-        let newString = textView.text
+        let newString = composer.text
         if let oldString = note.objectForKey("Text") as? String {
             if newString.isEmpty {
                 delegate?.removeNote(note)
             } else if newString != oldString {
-                note!.setObject(textView.text, forKey: "Text")
+                note!.setObject(composer.text, forKey: "Text")
                 delegate?.modifyNote(note!)
             }
         } else {
@@ -94,23 +91,23 @@ class NoteViewController: UIViewController {
                 delegate?.addNote(note)
             }
         }
-        textView.resignFirstResponder()
+        composer.resignFirstResponder()
         navigationController?.popToRootViewControllerAnimated(true)
     }
     
     func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
-            println("textView frame before: \(textView.frame)")
+//            println("textView frame before: \(textView.frame)")
             let textViewHeight = window.height - keyboardSize.height - toolbar.frame.height
             toolbar.frame.origin.y = textViewHeight
-            textView.frame.size.height = textViewHeight
-            println("Keyboard Size: \(keyboardSize)")
-            println("textView frame after: \(textView.frame)")
+            composer.frame.size.height = textViewHeight
+//            println("Keyboard Size: \(keyboardSize)")
+//            println("textView frame after: \(textView.frame)")
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {
         toolbar.frame.origin.y = window.height - toolbar.frame.height
-        textView.frame = window
+        composer.frame = window
     }
 }
