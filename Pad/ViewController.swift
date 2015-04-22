@@ -12,13 +12,15 @@ import CloudKit
 class ViewController: UITableViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate, NSCoding, UITextViewDelegate {
     let db = CKContainer.defaultContainer().privateCloudDatabase
     let defaults = NSUserDefaults.standardUserDefaults()
-    var notes = [CKRecord]()
-    var filteredNotes = [CKRecord]() {
+    var allNotes: [CKRecord]!
+    var visibleNotes: [CKRecord]!
+    var searchResults: [CKRecord]!
+    var shouldShowSearchResults = false {
         didSet {
-            tableView.reloadData()
+            refreshTableView()
         }
     }
-    var noResults = true
+    var query = String()
     let noteViewController = NoteViewController()
     let kNotesKey = "Notes"
     var composer = Composer()
@@ -36,7 +38,8 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         tableView.delegate = self
         tableView.rowHeight = 50
         noteViewController.delegate = self
-        notes = unarchiveNotes()
+        allNotes = unarchiveNotes()
+        visibleNotes = allNotes
         composer.becomeFirstResponder()
         composer.delegate = self
         scrollToLastCell()
@@ -52,10 +55,20 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     }
     
     func archiveNotes(notes: [CKRecord]) {
-        let data = NSKeyedArchiver.archivedDataWithRootObject(self.notes)
-        self.defaults.setObject(data, forKey: self.kNotesKey)
+        let data = NSKeyedArchiver.archivedDataWithRootObject(allNotes)
+        self.defaults.setObject(data, forKey: kNotesKey)
     }
     
+    func refreshTableView() {
+        if shouldShowSearchResults {
+            visibleNotes = searchResults
+        } else {
+            visibleNotes = allNotes
+        }
+        tableView.reloadData()
+        println("search results set")
+    }
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
     }
@@ -65,8 +78,8 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     }
     
     func scrollToLastCell() {
-        if notes.count > 0 {
-            let lastCell = NSIndexPath(forItem: notes.count - 1, inSection: 0)
+        if visibleNotes.count > 0 {
+            let lastCell = NSIndexPath(forItem: visibleNotes.count - 1, inSection: 0)
             tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false)
         }
     }
@@ -93,18 +106,18 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
             
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 //TODO: If local notes are more recent save local copy to iCloud
-                self.notes = results as! [CKRecord]
-                self.archiveNotes(self.notes)
+                self.allNotes = results as! [CKRecord]
+                self.archiveNotes(self.allNotes)
                 self.tableView.reloadData()
             })
         }
     }
     
     func addNote(note: CKRecord) {
-        self.notes.append(note)
-        let indexPath = NSIndexPath(forRow: self.notes.count - 1, inSection: 0)
+        self.allNotes.append(note)
+        let indexPath = NSIndexPath(forRow: self.allNotes.count - 1, inSection: 0)
         self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .None)
-        self.archiveNotes(self.notes)
+        self.archiveNotes(self.allNotes)
         self.scrollToLastCell()
         
         db.saveRecord(note, completionHandler: { (record, error) -> Void in
@@ -116,11 +129,11 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     }
     
     func removeNote(note: CKRecord) {
-        if let index = find(self.notes, note) {
-            self.notes.removeAtIndex(index)
+        if let index = find(self.allNotes, note) {
+            self.allNotes.removeAtIndex(index)
             let indexPath = NSIndexPath(forRow: index, inSection: 0)
             self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .None)
-            self.archiveNotes(self.notes)
+            self.archiveNotes(self.allNotes)
         }
         
         self.db.deleteRecordWithID(note.recordID) { (record, error) -> Void in
@@ -132,9 +145,9 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     }
     
     func modifyNote(note: CKRecord) {
-        if let index = find(self.notes, note) {
+        if let index = find(self.allNotes, note) {
             let indexPath = NSIndexPath(forRow: index, inSection: 0)
-            let lastPosition = NSIndexPath(forRow: notes.count - 1, inSection: 0)
+            let lastPosition = NSIndexPath(forRow: allNotes.count - 1, inSection: 0)
             
             //Check if note is already at the bottom
             if indexPath != lastPosition {
@@ -144,9 +157,9 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
                 UIView.setAnimationsEnabled(true)
                 
                 //Move note in data source and save to disk
-                notes.removeAtIndex(index)
-                notes.append(note)
-                self.archiveNotes(self.notes)
+                allNotes.removeAtIndex(index)
+                allNotes.append(note)
+                self.archiveNotes(self.allNotes)
                 
                 scrollToLastCell()
             }
@@ -172,23 +185,22 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     }
     
     override func encodeWithCoder(coder: NSCoder) {
-        coder.encodeObject(notes, forKey: kNotesKey)
+        coder.encodeObject(allNotes, forKey: kNotesKey)
     }
 
     //MARK: UITableViewDataSource
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        var count = noResults ? notes.count : filteredNotes.count
-        return count
+        return visibleNotes.count
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
         cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
-        var notes = noResults ? self.notes : self.filteredNotes
-        let text = notes[indexPath.row].objectForKey("Text") as! String
+        
+        let text = visibleNotes[indexPath.row].objectForKey("Text") as! String
         cell.textLabel!.text = text
         
-        let date = notes[indexPath.row].objectForKey("modificationDate") as? NSDate
+        let date = visibleNotes[indexPath.row].objectForKey("modificationDate") as? NSDate
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "EEEE, MMMM d"
         
@@ -216,12 +228,12 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     
     //MARK: UITableViewDelegate
     override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        let note = notes[indexPath.row]
+        let note = visibleNotes[indexPath.row]
         removeNote(note)
     }
 
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let note = notes[indexPath.row]
+        let note = visibleNotes[indexPath.row]
         presentNote(note)
     }
     
@@ -237,11 +249,13 @@ extension ViewController: UITextViewDelegate {
     }
     
     func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
-        noResults = (count(text) > 0) ? false : true
-        if noResults {
-            println("No results")
+        let currentText:NSString = textView.text
+        query = currentText.stringByReplacingCharactersInRange(range, withString: text)
+        
+        if count(query) == 0 || query == composer.placeholderText {
+            shouldShowSearchResults = false
         } else {
-            println("Results")
+            shouldShowSearchResults = true
         }
         return composer.textView(textView, shouldChangeTextInRange: range, replacementText: text)
     }
@@ -251,7 +265,7 @@ extension ViewController: UITextViewDelegate {
     }
     
     func textViewDidChange(textView: UITextView) {
-        filteredNotes = notes.filter({ (note: CKRecord) -> Bool in
+        searchResults = allNotes.filter({ (note: CKRecord) -> Bool in
             let query = note.objectForKey("Text") as! String
             let match = query.rangeOfString(textView.text, options: NSStringCompareOptions.CaseInsensitiveSearch)
             return match != nil
