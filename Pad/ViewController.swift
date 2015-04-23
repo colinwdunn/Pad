@@ -59,17 +59,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         composerInput.frame = CGRectMake(8, 0, composer.frame.width - 8, composer.frame.height)
     }
     
-    func unarchiveNotes() -> [CKRecord] {
-        var notes = [CKRecord]()
-        if let data = defaults.objectForKey(kNotesKey) as? NSData {
-            notes = NSKeyedUnarchiver.unarchiveObjectWithData(data) as! [CKRecord]
-        }
-        return notes
-    }
-    
-    func archiveNotes(notes: [CKRecord]) {
-        let data = NSKeyedArchiver.archivedDataWithRootObject(allNotes)
-        self.defaults.setObject(data, forKey: kNotesKey)
+    override func prefersStatusBarHidden() -> Bool {
+        return true
     }
     
     func composerTextDidChange(text: String) {
@@ -88,10 +79,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         tableView.reloadData()
     }
     
-    override func prefersStatusBarHidden() -> Bool {
-        return true
-    }
-    
     func scrollToLastCell() {
         if visibleNotes.count > 0 {
             let lastCell = NSIndexPath(forItem: visibleNotes.count - 1, inSection: 0)
@@ -102,11 +89,6 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     func presentNote(note: CKRecord) {
         noteViewController.note = note
         navigationController?.pushViewController(noteViewController, animated: true)
-    }
-    
-    func handleTap() {
-        let note = CKRecord(recordType: Note.recordType)
-        presentNote(note)
     }
     
     //MARK: CloudKit
@@ -195,6 +177,19 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     //MARK: NSCoding
+    func unarchiveNotes() -> [CKRecord] {
+        var notes = [CKRecord]()
+        if let data = defaults.objectForKey(kNotesKey) as? NSData {
+            notes = NSKeyedUnarchiver.unarchiveObjectWithData(data) as! [CKRecord]
+        }
+        return notes
+    }
+    
+    func archiveNotes(notes: [CKRecord]) {
+        let data = NSKeyedArchiver.archivedDataWithRootObject(allNotes)
+        self.defaults.setObject(data, forKey: kNotesKey)
+    }
+    
     required convenience init(coder decoder: NSCoder) {
         self.init()
         println(decoder.decodeObjectForKey(kNotesKey) as! [CKRecord])
