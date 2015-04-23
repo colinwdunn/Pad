@@ -61,14 +61,12 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
             return match != nil
         })
         
-        let visibleRows = tableView.indexPathsForVisibleRows() as! [NSIndexPath]
-        
         if count(text) > 0 {
-            println(visibleNotes.count)
+            visibleNotes = searchResults
         } else {
             visibleNotes = allNotes
         }
-        
+        tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: UITableViewRowAnimation.None)
 //        tableView.reloadData()
     }
     
