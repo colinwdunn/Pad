@@ -229,19 +229,6 @@ extension ViewController: UITableViewDataSource {
         
         return cell
     }
-    
-//    func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-//        let footerView = UIView(frame: CGRectMake(0, 0, view.frame.width, tableView.rowHeight))
-//        footerView.backgroundColor = UIColor.whiteColor()
-//        
-//        composer.frame = CGRectMake(8, 0, view.frame.width - 8, tableView.rowHeight)
-//        footerView.addSubview(composer)
-//        return footerView
-//    }
-    
-    func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return tableView.rowHeight
-    }
 }
 
 extension ViewController: UITableViewDelegate {
