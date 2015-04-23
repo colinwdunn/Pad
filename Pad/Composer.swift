@@ -8,7 +8,12 @@
 
 import UIKit
 
+protocol ComposerDelegate {
+    func composerTextDidChange(text: String)
+}
+
 class Composer: UITextView, UITextViewDelegate {
+    var composerDelegate: ComposerDelegate?
     var placeholderText = "Write something…"
     let placeholderTextColor = UIColor.lightGrayColor()
     override var text: String! {
@@ -24,6 +29,7 @@ class Composer: UITextView, UITextViewDelegate {
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
         font = UIFont.systemFontOfSize(18)
+        delegate = self
         keyboardAppearance = .Dark
         text = placeholderText
     }
@@ -42,7 +48,8 @@ extension Composer: UITextViewDelegate {
     
     func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {        
         let currentText:NSString = textView.text
-        let updatedText = currentText.stringByReplacingCharactersInRange(range, withString: text)
+        let updatedText = (currentText == placeholderText) ? text : currentText.stringByReplacingCharactersInRange(range, withString: text)
+        composerDelegate?.composerTextDidChange(updatedText)
         
         if count(updatedText) == 0 {
             self.text = placeholderText

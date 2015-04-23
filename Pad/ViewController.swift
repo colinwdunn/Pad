@@ -9,17 +9,12 @@
 import UIKit
 import CloudKit
 
-class ViewController: UITableViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate, NSCoding, UITextViewDelegate {
+class ViewController: UITableViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate, NSCoding, ComposerDelegate {
     let db = CKContainer.defaultContainer().privateCloudDatabase
     let defaults = NSUserDefaults.standardUserDefaults()
     var allNotes: [CKRecord]!
     var visibleNotes: [CKRecord]!
     var searchResults: [CKRecord]!
-    var shouldShowSearchResults = false {
-        didSet {
-            refreshTableView()
-        }
-    }
     var query = String()
     let noteViewController = NoteViewController()
     let kNotesKey = "Notes"
@@ -41,7 +36,7 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         allNotes = unarchiveNotes()
         visibleNotes = allNotes
         composer.becomeFirstResponder()
-        composer.delegate = self
+        composer.composerDelegate = self
         scrollToLastCell()
         loadItems()
     }
@@ -59,18 +54,22 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         self.defaults.setObject(data, forKey: kNotesKey)
     }
     
-    func refreshTableView() {
-        if shouldShowSearchResults {
-            visibleNotes = searchResults
+    func composerTextDidChange(text: String) {
+        searchResults = allNotes.filter({ (note: CKRecord) -> Bool in
+            let query = note.objectForKey("Text") as! String
+            let match = query.rangeOfString(text, options: NSStringCompareOptions.CaseInsensitiveSearch)
+            return match != nil
+        })
+        
+        let visibleRows = tableView.indexPathsForVisibleRows() as! [NSIndexPath]
+        
+        if count(text) > 0 {
+            println(visibleNotes.count)
         } else {
             visibleNotes = allNotes
         }
-        tableView.reloadData()
-        println("search results set")
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
+        
+//        tableView.reloadData()
     }
     
     override func prefersStatusBarHidden() -> Bool {
@@ -106,6 +105,7 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
             
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 //TODO: If local notes are more recent save local copy to iCloud
+                //If no internet connection don't replace local copy
                 self.allNotes = results as! [CKRecord]
                 self.archiveNotes(self.allNotes)
                 self.tableView.reloadData()
@@ -240,35 +240,5 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     //MARK: ScrollView Delegate
     override func scrollViewDidScroll(scrollView: UIScrollView) {
         composer.resignFirstResponder()
-    }
-}
-
-extension ViewController: UITextViewDelegate {
-    func textViewDidBeginEditing(textView: UITextView) {
-        composer.textViewDidBeginEditing(textView)
-    }
-    
-    func textView(textView: UITextView, shouldChangeTextInRange range: NSRange, replacementText text: String) -> Bool {
-        let currentText:NSString = textView.text
-        query = currentText.stringByReplacingCharactersInRange(range, withString: text)
-        
-        if count(query) == 0 || query == composer.placeholderText {
-            shouldShowSearchResults = false
-        } else {
-            shouldShowSearchResults = true
-        }
-        return composer.textView(textView, shouldChangeTextInRange: range, replacementText: text)
-    }
-    
-    func textViewDidChangeSelection(textView: UITextView) {
-        composer.textViewDidChangeSelection(textView)
-    }
-    
-    func textViewDidChange(textView: UITextView) {
-        searchResults = allNotes.filter({ (note: CKRecord) -> Bool in
-            let query = note.objectForKey("Text") as! String
-            let match = query.rangeOfString(textView.text, options: NSStringCompareOptions.CaseInsensitiveSearch)
-            return match != nil
-        })
     }
 }
