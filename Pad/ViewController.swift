@@ -9,16 +9,19 @@
 import UIKit
 import CloudKit
 
-class ViewController: UITableViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate, NSCoding, ComposerDelegate {
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate, NSCoding, ComposerDelegate {
     let db = CKContainer.defaultContainer().privateCloudDatabase
     let defaults = NSUserDefaults.standardUserDefaults()
+    var tableView: UITableView!
     var allNotes: [CKRecord]!
     var visibleNotes: [CKRecord]!
     var searchResults: [CKRecord]!
     var query = String()
     let noteViewController = NoteViewController()
     let kNotesKey = "Notes"
-    var composer = Composer()
+    
+    let composer = UIView()
+    var composerInput = Composer()
     
     struct note {
         var date: NSDate
@@ -28,17 +31,32 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.setNavigationBarHidden(true, animated: false)
+        
+        tableView = UITableView(frame: CGRectZero, style: .Plain)
         tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Note.identifier)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = 50
+        view.addSubview(tableView)
+        
+        composerInput.composerDelegate = self
+        composer.addSubview(composerInput)
+        view.addSubview(composer)
+        
         noteViewController.delegate = self
+        
         allNotes = unarchiveNotes()
         visibleNotes = allNotes
-        composer.becomeFirstResponder()
-        composer.composerDelegate = self
-        scrollToLastCell()
         loadItems()
+        
+        scrollToLastCell()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        tableView.frame = view.bounds
+        composer.frame = CGRectMake(0, 0, view.frame.width, tableView.rowHeight)
+        composerInput.frame = CGRectMake(8, 0, composer.frame.width - 8, composer.frame.height)
     }
     
     func unarchiveNotes() -> [CKRecord] {
@@ -66,8 +84,8 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         } else {
             visibleNotes = allNotes
         }
-        tableView.reloadSections(NSIndexSet(index: 0), withRowAnimation: UITableViewRowAnimation.None)
-//        tableView.reloadData()
+        
+        tableView.reloadData()
     }
     
     override func prefersStatusBarHidden() -> Bool {
@@ -185,13 +203,14 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
     override func encodeWithCoder(coder: NSCoder) {
         coder.encodeObject(allNotes, forKey: kNotesKey)
     }
+}
 
-    //MARK: UITableViewDataSource
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+extension ViewController: UITableViewDataSource {
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return visibleNotes.count
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
         cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
         
@@ -207,36 +226,37 @@ class ViewController: UITableViewController, UITableViewDataSource, UITableViewD
         } else {
             cell.detailTextLabel!.text = dateFormatter.stringFromDate(NSDate())
         }
-
+        
         return cell
     }
     
-    override func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
-        let footerView = UIView(frame: CGRectMake(0, 0, view.frame.width, tableView.rowHeight))
-        footerView.backgroundColor = UIColor.whiteColor()
-        
-        composer.frame = CGRectMake(8, 0, view.frame.width - 8, tableView.rowHeight)
-        footerView.addSubview(composer)
-        return footerView
-    }
+//    func tableView(tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+//        let footerView = UIView(frame: CGRectMake(0, 0, view.frame.width, tableView.rowHeight))
+//        footerView.backgroundColor = UIColor.whiteColor()
+//        
+//        composer.frame = CGRectMake(8, 0, view.frame.width - 8, tableView.rowHeight)
+//        footerView.addSubview(composer)
+//        return footerView
+//    }
     
-    override func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+    func tableView(tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return tableView.rowHeight
     }
-    
-    //MARK: UITableViewDelegate
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+}
+
+extension ViewController: UITableViewDelegate {
+    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         let note = visibleNotes[indexPath.row]
         removeNote(note)
     }
-
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let note = visibleNotes[indexPath.row]
         presentNote(note)
     }
     
     //MARK: ScrollView Delegate
-    override func scrollViewDidScroll(scrollView: UIScrollView) {
-        composer.resignFirstResponder()
+    func scrollViewDidScroll(scrollView: UIScrollView) {
+        composerInput.resignFirstResponder()
     }
 }
