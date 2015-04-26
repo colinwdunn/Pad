@@ -37,6 +37,13 @@ class Composer: UITextView, UITextViewDelegate {
     required init(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    func clearInput() {
+        text = ""
+        composerDelegate?.composerTextDidChange(text)
+        resignFirstResponder()
+        text = placeholderText
+    }
 }
 
 extension Composer: UITextViewDelegate {

@@ -9,54 +9,62 @@
 import UIKit
 import CloudKit
 
-class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, NoteDelegate, NSCoding, ComposerDelegate {
+class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate, TableViewDelegate {
     let db = CKContainer.defaultContainer().privateCloudDatabase
     let defaults = NSUserDefaults.standardUserDefaults()
-    var tableView: UITableView!
-    var allNotes: [CKRecord]!
-    var visibleNotes: [CKRecord]!
+
+    var allNotes: [CKRecord]! {
+        didSet {
+            if oldValue != nil {
+                if oldValue != allNotes {
+                    println("Archived notes")
+                    archiveNotes(allNotes)
+                }
+            }
+        }
+    }
     var searchResults: [CKRecord]!
-    var query = String()
+    
     let noteViewController = NoteViewController()
     let kNotesKey = "Notes"
     
     let composer = UIView()
-    var composerInput = Composer()
+    let composerInput = Composer()
+    let composerAddButton = UIButton()
     
-    struct note {
-        var date: NSDate
-        var text: String
-    }
+    let tableViewController = TableViewController()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.setNavigationBarHidden(true, animated: false)
         
-        tableView = UITableView(frame: CGRectZero, style: .Plain)
-        tableView.registerClass(UITableViewCell.self, forCellReuseIdentifier: Note.identifier)
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.rowHeight = 50
-        view.addSubview(tableView)
-        
         composerInput.composerDelegate = self
         composer.addSubview(composerInput)
+        composerAddButton.setTitle("Add", forState: .Normal)
+        composerAddButton.setTitleColor(UIColor.blueColor(), forState: .Normal)
+        composerAddButton.addTarget(self, action: "handleAddButtonTap", forControlEvents: .TouchUpInside)
+        composerAddButton.alpha = 0
+        composer.addSubview(composerAddButton)
         view.addSubview(composer)
+        
+        tableViewController.delegate = self
+        view.addSubview(tableViewController.tableView)
         
         noteViewController.delegate = self
         
         allNotes = unarchiveNotes()
-        visibleNotes = allNotes
+        tableViewController.notes = allNotes
         loadItems()
         
-        scrollToLastCell()
+//        scrollToLastCell()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        tableView.frame = view.bounds
-        composer.frame = CGRectMake(0, 0, view.frame.width, tableView.rowHeight)
+        tableViewController.tableView.frame = CGRectMake(0, tableViewController.tableView.rowHeight, view.bounds.width, view.bounds.height - tableViewController.tableView.rowHeight)
+        composer.frame = CGRectMake(0, 0, view.frame.width, tableViewController.tableView.rowHeight)
         composerInput.frame = CGRectMake(8, 0, composer.frame.width - 8, composer.frame.height)
+        composerAddButton.frame = CGRectMake(view.frame.width - 80, 10, 80, 20)
     }
     
     override func prefersStatusBarHidden() -> Bool {
@@ -71,19 +79,30 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         })
         
         if count(text) > 0 {
-            visibleNotes = searchResults
+            println("Showing search results")
+            tableViewController.notes = searchResults
+            composerAddButton.alpha = 1
         } else {
-            visibleNotes = allNotes
+            println("Showing all notes")
+            tableViewController.notes = allNotes
+            composerAddButton.alpha = 0
         }
         
-        tableView.reloadData()
+        tableViewController.tableView.reloadData()
+    }
+    
+    func handleAddButtonTap() {
+        let note = CKRecord(recordType: Note.recordType)
+        note.setObject(composerInput.text, forKey: "Text")
+        composerInput.clearInput()
+        addNote(note)
     }
     
     func scrollToLastCell() {
-        if visibleNotes.count > 0 {
-            let lastCell = NSIndexPath(forItem: visibleNotes.count - 1, inSection: 0)
-            tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false)
-        }
+        if tableViewController.notes.count > 0 {
+            let lastCell = NSIndexPath(forItem: tableViewController.notes.count - 1, inSection: 0)
+            tableViewController.tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false)
+       }
     }
     
     func presentNote(note: CKRecord) {
@@ -105,18 +124,16 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
                 //TODO: If local notes are more recent save local copy to iCloud
                 //If no internet connection don't replace local copy
                 self.allNotes = results as! [CKRecord]
-                self.archiveNotes(self.allNotes)
-                self.tableView.reloadData()
+                self.tableViewController.tableView.reloadData()
             })
         }
     }
     
     func addNote(note: CKRecord) {
-        self.allNotes.append(note)
-        let indexPath = NSIndexPath(forRow: self.allNotes.count - 1, inSection: 0)
-        self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .None)
-        self.archiveNotes(self.allNotes)
-        self.scrollToLastCell()
+        allNotes.append(note)
+        tableViewController.notes = allNotes
+        let indexPath = NSIndexPath(forRow: allNotes.count - 1, inSection: 0)
+        tableViewController.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Automatic)
         
         db.saveRecord(note, completionHandler: { (record, error) -> Void in
             if error != nil {
@@ -127,14 +144,23 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func removeNote(note: CKRecord) {
-        if let index = find(self.allNotes, note) {
-            self.allNotes.removeAtIndex(index)
-            let indexPath = NSIndexPath(forRow: index, inSection: 0)
-            self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .None)
-            self.archiveNotes(self.allNotes)
+        if let index = find(allNotes, note) {
+            println("Found")
+        } else {
+            println("Not found")
         }
         
-        self.db.deleteRecordWithID(note.recordID) { (record, error) -> Void in
+        if let index = find(allNotes, note) {
+            allNotes.removeAtIndex(index)
+        }
+        
+        if let index = find(tableViewController.notes, note) {
+            tableViewController.notes.removeAtIndex(index)
+            let indexPath = NSIndexPath(forItem: index, inSection: 0)
+            tableViewController.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        }
+ 
+        db.deleteRecordWithID(note.recordID) { (record, error) -> Void in
             if error != nil {
                 println(error.localizedDescription)
                 //TODO: Show delete error in UI
@@ -143,27 +169,28 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
     
     func modifyNote(note: CKRecord) {
-        if let index = find(self.allNotes, note) {
+        if let index = find(allNotes, note) {
+            allNotes.removeAtIndex(index)
+            allNotes.append(note)
+        }
+        
+        if let index = find(tableViewController.notes, note) {
             let indexPath = NSIndexPath(forRow: index, inSection: 0)
-            let lastPosition = NSIndexPath(forRow: allNotes.count - 1, inSection: 0)
+            let lastPosition = NSIndexPath(forRow: tableViewController.notes.count - 1, inSection: 0)
             
             //Check if note is already at the bottom
             if indexPath != lastPosition {
                 //Move cell to bottom
                 UIView.setAnimationsEnabled(false)
-                tableView.moveRowAtIndexPath(indexPath, toIndexPath: lastPosition)
+                tableViewController.tableView.moveRowAtIndexPath(indexPath, toIndexPath: lastPosition)
                 UIView.setAnimationsEnabled(true)
-                
-                //Move note in data source and save to disk
-                allNotes.removeAtIndex(index)
-                allNotes.append(note)
-                self.archiveNotes(self.allNotes)
-                
                 scrollToLastCell()
             }
             
-            //Refresh bottom cell
-            tableView.reloadRowsAtIndexPaths([lastPosition], withRowAnimation: .None)
+            //Refresh cell
+            tableViewController.notes = allNotes
+            tableViewController.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .None)
+            tableViewController.tableView.reloadRowsAtIndexPaths([lastPosition], withRowAnimation: .None)
         }
         
         let operation = CKModifyRecordsOperation(recordsToSave: [note], recordIDsToDelete: nil)
@@ -200,45 +227,8 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     }
 }
 
-extension ViewController: UITableViewDataSource {
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return visibleNotes.count
-    }
-    
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
-        cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
-        
-        let text = visibleNotes[indexPath.row].objectForKey("Text") as! String
-        cell.textLabel!.text = text
-        
-        let date = visibleNotes[indexPath.row].objectForKey("modificationDate") as? NSDate
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.dateFormat = "EEEE, MMMM d"
-        
-        if date != nil {
-            cell.detailTextLabel!.text = dateFormatter.stringFromDate(date!)
-        } else {
-            cell.detailTextLabel!.text = dateFormatter.stringFromDate(NSDate())
-        }
-        
-        return cell
-    }
-}
-
-extension ViewController: UITableViewDelegate {
-    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        let note = visibleNotes[indexPath.row]
-        removeNote(note)
-    }
-    
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        let note = visibleNotes[indexPath.row]
-        presentNote(note)
-    }
-    
-    //MARK: ScrollView Delegate
-    func scrollViewDidScroll(scrollView: UIScrollView) {
-        composerInput.resignFirstResponder()
-    }
+extension CKRecord: Equatable {}
+public func
+    ==( lhs: CKRecord, rhs: CKRecord ) -> Bool {
+        return lhs.recordID.recordName == rhs.recordID.recordName
 }
