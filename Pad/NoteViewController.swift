@@ -60,11 +60,13 @@ class NoteViewController: UIViewController {
     }
     
     override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
     }
     
     override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
     
@@ -92,13 +94,10 @@ class NoteViewController: UIViewController {
     }
     
     func keyboardWillShow(notification: NSNotification) {
-        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameBeginUserInfoKey] as? NSValue)?.CGRectValue() {
-//            println("textView frame before: \(textView.frame)")
+        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
             let textViewHeight = window.height - keyboardSize.height - toolbar.frame.height
             toolbar.frame.origin.y = textViewHeight
             composer.frame.size.height = textViewHeight
-//            println("Keyboard Size: \(keyboardSize)")
-//            println("textView frame after: \(textView.frame)")
         }
     }
     

@@ -17,7 +17,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         didSet {
             if oldValue != nil {
                 if oldValue != allNotes {
-                    println("Archived notes")
+                    println("Saved notes to disk")
                     archiveNotes(allNotes)
                 }
             }
@@ -38,6 +38,9 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         super.viewDidLoad()
         navigationController?.setNavigationBarHidden(true, animated: false)
         
+        tableViewController.delegate = self
+        view.addSubview(tableViewController.tableView)
+        
         composerInput.composerDelegate = self
         composer.addSubview(composerInput)
         composerAddButton.setTitle("Add", forState: .Normal)
@@ -47,9 +50,6 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         composer.addSubview(composerAddButton)
         view.addSubview(composer)
         
-        tableViewController.delegate = self
-        view.addSubview(tableViewController.tableView)
-        
         noteViewController.delegate = self
         
         allNotes = unarchiveNotes()
@@ -57,16 +57,32 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         loadItems()
         
         scrollToLastCell()
+        
+//        line = UIView(frame: CGRectMake(0, view.bounds.height - tableViewController.tableView.rowHeight, self.view.bounds.width, tableViewController.tableView.rowHeight))
+//        line.backgroundColor = UIColor.redColor()
+//        view.addSubview(line)
     }
     
     override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
+    }
+    
+    override func viewWillDisappear(animated: Bool) {
+        super.viewWillDisappear(animated)
+        NSNotificationCenter.defaultCenter().removeObserver(self)
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
         composerInput.becomeFirstResponder()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        tableViewController.tableView.frame = CGRectMake(0, tableViewController.tableView.rowHeight, view.bounds.width, view.bounds.height - tableViewController.tableView.rowHeight)
-        composer.frame = CGRectMake(0, 0, view.frame.width, tableViewController.tableView.rowHeight)
+        tableViewController.tableView.frame = CGRectMake(0, 0, view.bounds.width, view.bounds.height - tableViewController.tableView.rowHeight)
+        composer.frame = CGRectMake(0, view.bounds.height - tableViewController.tableView.rowHeight, view.frame.width, tableViewController.tableView.rowHeight)
         composerInput.frame = CGRectMake(8, 0, composer.frame.width - 8, composer.frame.height)
         composerAddButton.frame = CGRectMake(view.frame.width - 80, 10, 80, 20)
     }
@@ -112,6 +128,21 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     func presentNote(note: CKRecord) {
         noteViewController.note = note
         navigationController?.pushViewController(noteViewController, animated: true)
+    }
+    
+    func keyboardWillShow(notification: NSNotification) {
+        if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
+            println("Keyboard will show")
+            println(keyboardSize)
+            
+            composer.frame.origin.y = view.frame.height - keyboardSize.height - tableViewController.tableView.rowHeight
+        }
+    }
+    
+    func keyboardWillHide(notification: NSNotification) {
+        println("Keyboard will hide")
+        
+        composer.frame.origin.y = view.frame.height - tableViewController.tableView.rowHeight
     }
     
     //MARK: CloudKit
@@ -215,18 +246,12 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         self.defaults.setObject(data, forKey: kNotesKey)
     }
     
-    required convenience init(coder decoder: NSCoder) {
-        self.init()
-        println(decoder.decodeObjectForKey(kNotesKey) as! [CKRecord])
-    }
-    
     override func encodeWithCoder(coder: NSCoder) {
         coder.encodeObject(allNotes, forKey: kNotesKey)
     }
 }
 
 extension CKRecord: Equatable {}
-public func
-    ==( lhs: CKRecord, rhs: CKRecord ) -> Bool {
-        return lhs.recordID.recordName == rhs.recordID.recordName
+public func ==( lhs: CKRecord, rhs: CKRecord ) -> Bool {
+    return lhs.recordID == rhs.recordID
 }
