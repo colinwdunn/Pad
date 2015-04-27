@@ -29,7 +29,6 @@ class TableViewController: UITableViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
     }
     
     //MARK: TableView Data Source

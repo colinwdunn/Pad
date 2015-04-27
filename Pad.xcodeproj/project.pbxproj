@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		620039AD1AEC861800B14F97 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 620039AC1AEC861800B14F97 /* Images.xcassets */; };
 		6282F1711AD8BED2003114F0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1701AD8BED2003114F0 /* AppDelegate.swift */; };
 		6282F1731AD8BED2003114F0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1721AD8BED2003114F0 /* ViewController.swift */; };
-		6282F1781AD8BED2003114F0 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6282F1771AD8BED2003114F0 /* Images.xcassets */; };
 		6282F17B1AD8BED2003114F0 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6282F1791AD8BED2003114F0 /* LaunchScreen.xib */; };
 		6282F1871AD8BED2003114F0 /* PadTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1861AD8BED2003114F0 /* PadTests.swift */; };
 		6282F1911AD8C2B5003114F0 /* NoteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1901AD8C2B5003114F0 /* NoteViewController.swift */; };
@@ -30,11 +30,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		620039AC1AEC861800B14F97 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		6282F16B1AD8BED2003114F0 /* Pad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6282F16F1AD8BED2003114F0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6282F1701AD8BED2003114F0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		6282F1721AD8BED2003114F0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		6282F1771AD8BED2003114F0 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		6282F17A1AD8BED2003114F0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		6282F1801AD8BED2003114F0 /* PadTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PadTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6282F1851AD8BED2003114F0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -111,7 +111,7 @@
 				6258361B1AD9F55C00C3E46E /* Model */,
 				629F9EC91AE3272A00699DA6 /* View */,
 				6258361C1AD9F56C00C3E46E /* Controllers */,
-				6282F1771AD8BED2003114F0 /* Images.xcassets */,
+				620039AC1AEC861800B14F97 /* Images.xcassets */,
 				6282F1791AD8BED2003114F0 /* LaunchScreen.xib */,
 				6282F16E1AD8BED2003114F0 /* Supporting Files */,
 			);
@@ -238,7 +238,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6282F17B1AD8BED2003114F0 /* LaunchScreen.xib in Resources */,
-				6282F1781AD8BED2003114F0 /* Images.xcassets in Resources */,
+				620039AD1AEC861800B14F97 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

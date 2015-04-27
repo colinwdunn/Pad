@@ -56,7 +56,11 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         tableViewController.notes = allNotes
         loadItems()
         
-//        scrollToLastCell()
+        scrollToLastCell()
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        composerInput.becomeFirstResponder()
     }
     
     override func viewDidLayoutSubviews() {
@@ -144,12 +148,6 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     }
     
     func removeNote(note: CKRecord) {
-        if let index = find(allNotes, note) {
-            println("Found")
-        } else {
-            println("Not found")
-        }
-        
         if let index = find(allNotes, note) {
             allNotes.removeAtIndex(index)
         }
