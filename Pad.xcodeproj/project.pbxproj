@@ -213,7 +213,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 6282F1661AD8BED2003114F0 /* Build configuration list for PBXProject "Notepad" */;
+			buildConfigurationList = 6282F1661AD8BED2003114F0 /* Build configuration list for PBXProject "Pad" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -445,7 +445,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6282F1661AD8BED2003114F0 /* Build configuration list for PBXProject "Notepad" */ = {
+		6282F1661AD8BED2003114F0 /* Build configuration list for PBXProject "Pad" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6282F1881AD8BED2003114F0 /* Debug */,
