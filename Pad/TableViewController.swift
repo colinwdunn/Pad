@@ -25,10 +25,16 @@ class TableViewController: UITableViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = 50
+        tableView.separatorStyle = .None
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        println("View will appear")
     }
     
     //MARK: TableView Data Source
@@ -39,6 +45,7 @@ class TableViewController: UITableViewController {
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
         cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
+        cell.backgroundColor = UIColor.clearColor()
         
         let text = notes[indexPath.row].objectForKey("Text") as! String
         cell.textLabel!.text = text

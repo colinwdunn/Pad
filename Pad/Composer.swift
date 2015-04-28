@@ -32,6 +32,7 @@ class Composer: UITextView, UITextViewDelegate {
         delegate = self
         keyboardAppearance = .Dark
         text = placeholderText
+        backgroundColor = UIColor.clearColor()
     }
 
     required init(coder aDecoder: NSCoder) {
@@ -41,8 +42,8 @@ class Composer: UITextView, UITextViewDelegate {
     func clearInput() {
         text = ""
         composerDelegate?.composerTextDidChange(text)
-        resignFirstResponder()
         text = placeholderText
+        selectedTextRange = textRangeFromPosition(beginningOfDocument, toPosition: beginningOfDocument)
     }
 }
 

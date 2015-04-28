@@ -39,10 +39,13 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         navigationController?.setNavigationBarHidden(true, animated: false)
         
         tableViewController.delegate = self
-        view.addSubview(tableViewController.tableView)
+//        tableViewController.tableView.backgroundColor = UIColor.redColor()
+        view.addSubview(tableViewController.view)
         
         composerInput.composerDelegate = self
+
         composer.addSubview(composerInput)
+        composer.backgroundColor = UIColor.whiteColor()
         composerAddButton.setTitle("Add", forState: .Normal)
         composerAddButton.setTitleColor(UIColor.blueColor(), forState: .Normal)
         composerAddButton.addTarget(self, action: "handleAddButtonTap", forControlEvents: .TouchUpInside)
@@ -57,10 +60,6 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         loadItems()
         
         scrollToLastCell()
-        
-//        line = UIView(frame: CGRectMake(0, view.bounds.height - tableViewController.tableView.rowHeight, self.view.bounds.width, tableViewController.tableView.rowHeight))
-//        line.backgroundColor = UIColor.redColor()
-//        view.addSubview(line)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -81,10 +80,12 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        tableViewController.tableView.frame = CGRectMake(0, 0, view.bounds.width, view.bounds.height - tableViewController.tableView.rowHeight)
         composer.frame = CGRectMake(0, view.bounds.height - tableViewController.tableView.rowHeight, view.frame.width, tableViewController.tableView.rowHeight)
-        composerInput.frame = CGRectMake(8, 0, composer.frame.width - 8, composer.frame.height)
+        composerInput.frame = CGRectMake(8, 4, composer.frame.width - 8, composer.frame.height)
         composerAddButton.frame = CGRectMake(view.frame.width - 80, 10, 80, 20)
+//        tableViewController.view.frame = CGRectMake(0, 0, view.bounds.width, view.bounds.height - composer.frame.height)
+        tableViewController.view.frame = view.bounds
+        tableViewController.tableView.contentInset.bottom = composer.frame.height
     }
     
     override func prefersStatusBarHidden() -> Bool {
@@ -132,17 +133,14 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     
     func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
-            println("Keyboard will show")
-            println(keyboardSize)
-            
-            composer.frame.origin.y = view.frame.height - keyboardSize.height - tableViewController.tableView.rowHeight
+            composer.frame.origin.y = view.frame.height - keyboardSize.height - composer.frame.height
+            tableViewController.tableView.contentInset.bottom = keyboardSize.height + composer.frame.height
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {
-        println("Keyboard will hide")
-        
-        composer.frame.origin.y = view.frame.height - tableViewController.tableView.rowHeight
+        composer.frame.origin.y = view.frame.height - composer.frame.height
+        tableViewController.tableView.contentInset.bottom = composer.frame.height
     }
     
     //MARK: CloudKit
@@ -168,7 +166,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         allNotes.append(note)
         tableViewController.notes = allNotes
         let indexPath = NSIndexPath(forRow: allNotes.count - 1, inSection: 0)
-        tableViewController.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Automatic)
+        tableViewController.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade)
         
         db.saveRecord(note, completionHandler: { (record, error) -> Void in
             if error != nil {

@@ -33,7 +33,8 @@ class NoteViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor.blackColor()
+        
+        view.backgroundColor = UIColor.whiteColor()
         
         let toolbarHeight:CGFloat = 50
         let padding:CGFloat = 16
