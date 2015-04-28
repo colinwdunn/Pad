@@ -48,10 +48,9 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
 
         composer.addSubview(composerInput)
         composer.backgroundColor = UIColor.whiteColor()
-        composerAddButton.setTitle("Add", forState: .Normal)
+        composerAddButton.setTitle("Open", forState: .Normal)
         composerAddButton.setTitleColor(UIColor.blueColor(), forState: .Normal)
-        composerAddButton.addTarget(self, action: "handleAddButtonTap", forControlEvents: .TouchUpInside)
-        composerAddButton.alpha = 0
+        composerAddButton.addTarget(self, action: "handleAddButtonTap:", forControlEvents: .TouchUpInside)
         composer.addSubview(composerAddButton)
         view.addSubview(composer)
         
@@ -109,21 +108,36 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         
         if count(text) > 0 {
             tableViewController.notes = searchResults
-            composerAddButton.alpha = 1
+            
+            if searchResults.count > 0 {
+                composerAddButton.setTitle("Open", forState: .Normal)
+            } else {
+                composerAddButton.setTitle("Add", forState: .Normal)
+            }
         } else {
             tableViewController.notes = allNotes
-            composerAddButton.alpha = 0
+            composerAddButton.setTitle("Add", forState: .Normal)
         }
         
         tableViewController.tableView.reloadData()
         scrollToLastCell(false)
     }
     
-    func handleAddButtonTap() {
-        let note = CKRecord(recordType: Note.recordType)
-        note.setObject(composerInput.text, forKey: "Text")
-        composerInput.clearInput()
-        addNote(note)
+    func handleAddButtonTap(button: UIButton) {
+        if button.currentTitle == "Add" {
+            let note = CKRecord(recordType: Note.recordType)
+            note.setObject(composerInput.text, forKey: "Text")
+            composerInput.clearInput()
+            addNote(note)
+        } else {
+            if searchResults != nil {
+                let note = searchResults[searchResults.count - 1]
+                presentNote(note)
+            } else {
+                let note = allNotes[allNotes.count - 1]
+                presentNote(note)
+            }
+        }
     }
     
     func scrollToLastCell(animated: Bool) {
@@ -259,9 +273,4 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     override func encodeWithCoder(coder: NSCoder) {
         coder.encodeObject(allNotes, forKey: kNotesKey)
     }
-}
-
-extension CKRecord: Equatable {}
-public func ==( lhs: CKRecord, rhs: CKRecord ) -> Bool {
-    return lhs.recordID == rhs.recordID
 }

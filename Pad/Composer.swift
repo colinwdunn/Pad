@@ -14,7 +14,7 @@ protocol ComposerDelegate {
 
 class Composer: UITextView, UITextViewDelegate {
     var composerDelegate: ComposerDelegate?
-    var placeholderText = "Find or take a note…"
+    var placeholderText = "Open or add a note…"
     let placeholderTextColor = UIColor.lightGrayColor()
     override var text: String! {
         didSet {

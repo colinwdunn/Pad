@@ -50,15 +50,27 @@ class TableViewController: UITableViewController {
         let text = notes[indexPath.row].objectForKey("Text") as! String
         cell.textLabel!.text = text
         
-        let date = notes[indexPath.row].objectForKey("modificationDate") as? NSDate
+        var date = (notes[indexPath.row].objectForKey("modificationDate") as? NSDate)?.relativeTime
+        
         let dateFormatter = NSDateFormatter()
         dateFormatter.dateFormat = "EEEE, MMMM d"
         
         if date != nil {
-            cell.detailTextLabel!.text = dateFormatter.stringFromDate(date!)
+//            cell.detailTextLabel!.text = dateFormatter.stringFromDate(date)
+            cell.detailTextLabel?.text = date
         } else {
             cell.detailTextLabel!.text = dateFormatter.stringFromDate(NSDate())
         }
+        
+        if indexPath.row == notes.count - 1 {
+            cell.textLabel?.backgroundColor = UIColor.clearColor()
+            cell.detailTextLabel?.backgroundColor = UIColor.clearColor()
+            cell.backgroundColor = UIColor(red: 245/255, green: 248/255, blue: 250/255, alpha: 1.0)
+        }
+        
+        let highlightView = UIView()
+        highlightView.backgroundColor = UIColor.clearColor()
+        cell.selectedBackgroundView = highlightView
         
         return cell
     }
