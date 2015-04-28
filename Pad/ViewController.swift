@@ -34,6 +34,8 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     
     let tableViewController = TableViewController()
     
+    var keyboardSize: CGRect?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.setNavigationBarHidden(true, animated: false)
@@ -59,7 +61,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         tableViewController.notes = allNotes
         loadItems()
         
-        scrollToLastCell()
+        scrollToLastCell(false)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -80,12 +82,18 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        composer.frame = CGRectMake(0, view.bounds.height - tableViewController.tableView.rowHeight, view.frame.width, tableViewController.tableView.rowHeight)
+        composer.frame = CGRectMake(0, 0, view.frame.width, tableViewController.tableView.rowHeight)
         composerInput.frame = CGRectMake(8, 4, composer.frame.width - 8, composer.frame.height)
         composerAddButton.frame = CGRectMake(view.frame.width - 80, 10, 80, 20)
-//        tableViewController.view.frame = CGRectMake(0, 0, view.bounds.width, view.bounds.height - composer.frame.height)
         tableViewController.view.frame = view.bounds
-        tableViewController.tableView.contentInset.bottom = composer.frame.height
+        
+        if keyboardSize != nil {
+            tableViewController.tableView.contentInset.bottom = composer.frame.height + keyboardSize!.height
+            composer.frame.origin.y = view.bounds.height - tableViewController.tableView.rowHeight - keyboardSize!.height
+        } else {
+            tableViewController.tableView.contentInset.bottom = composer.frame.height
+            composer.frame.origin.y = view.bounds.height - tableViewController.tableView.rowHeight
+        }
     }
     
     override func prefersStatusBarHidden() -> Bool {
@@ -100,16 +108,15 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         })
         
         if count(text) > 0 {
-            println("Showing search results")
             tableViewController.notes = searchResults
             composerAddButton.alpha = 1
         } else {
-            println("Showing all notes")
             tableViewController.notes = allNotes
             composerAddButton.alpha = 0
         }
         
         tableViewController.tableView.reloadData()
+        scrollToLastCell(false)
     }
     
     func handleAddButtonTap() {
@@ -119,10 +126,10 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         addNote(note)
     }
     
-    func scrollToLastCell() {
+    func scrollToLastCell(animated: Bool) {
         if tableViewController.notes.count > 0 {
             let lastCell = NSIndexPath(forItem: tableViewController.notes.count - 1, inSection: 0)
-            tableViewController.tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: false)
+            tableViewController.tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: animated)
        }
     }
     
@@ -135,12 +142,14 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
             composer.frame.origin.y = view.frame.height - keyboardSize.height - composer.frame.height
             tableViewController.tableView.contentInset.bottom = keyboardSize.height + composer.frame.height
+            self.keyboardSize = keyboardSize
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {
         composer.frame.origin.y = view.frame.height - composer.frame.height
         tableViewController.tableView.contentInset.bottom = composer.frame.height
+        keyboardSize = nil
     }
     
     //MARK: CloudKit
@@ -158,6 +167,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
                 //If no internet connection don't replace local copy
                 self.allNotes = results as! [CKRecord]
                 self.tableViewController.tableView.reloadData()
+                self.scrollToLastCell(true)
             })
         }
     }
@@ -167,6 +177,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         tableViewController.notes = allNotes
         let indexPath = NSIndexPath(forRow: allNotes.count - 1, inSection: 0)
         tableViewController.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade)
+        scrollToLastCell(true)
         
         db.saveRecord(note, completionHandler: { (record, error) -> Void in
             if error != nil {
@@ -180,11 +191,12 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         if let index = find(allNotes, note) {
             allNotes.removeAtIndex(index)
         }
-        
+
         if let index = find(tableViewController.notes, note) {
             tableViewController.notes.removeAtIndex(index)
             let indexPath = NSIndexPath(forItem: index, inSection: 0)
             tableViewController.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+//            scrollToLastCell(false)
         }
  
         db.deleteRecordWithID(note.recordID) { (record, error) -> Void in
@@ -211,7 +223,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
                 UIView.setAnimationsEnabled(false)
                 tableViewController.tableView.moveRowAtIndexPath(indexPath, toIndexPath: lastPosition)
                 UIView.setAnimationsEnabled(true)
-                scrollToLastCell()
+                scrollToLastCell(false)
             }
             
             //Refresh cell
