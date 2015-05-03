@@ -46,8 +46,8 @@ class TableViewController: UITableViewController {
         var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
         cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
         cell.backgroundColor = UIColor.clearColor()
-        cell.textLabel?.font = national
-        cell.detailTextLabel?.font = national
+        cell.textLabel?.font = atlas
+        cell.detailTextLabel?.font = atlas
         
         let text = notes[indexPath.row].objectForKey("Text") as! String
         cell.textLabel!.text = text

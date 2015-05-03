@@ -46,7 +46,7 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
         
         composer.alwaysBounceVertical = true
         composer.textContainerInset = UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding)
-        composer.font = national
+        composer.font = atlas
         view.addSubview(composer)
         
         toolbar.frame = CGRectMake(0, UIScreen.mainScreen().bounds.height, UIScreen.mainScreen().bounds.width, toolbarHeight)
@@ -59,7 +59,7 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
         done.setTitle("Done", forState: .Normal)
         done.setTitleColor(UIColor.blueColor(), forState: .Normal)
         done.addTarget(self, action: "handleDoneTap", forControlEvents: .TouchUpInside)
-        done.titleLabel?.font = national
+        done.titleLabel?.font = atlas
         toolbar.addSubview(done)
     }
     

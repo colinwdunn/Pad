@@ -9,7 +9,7 @@
 import UIKit
 import CloudKit
 
-let national = UIFont(name: "AtlasGrotesk-Regular", size: 16)
+let atlas = UIFont(name: "AtlasGrotesk-Regular", size: 16)
 
 class Extensions: NSObject {}
 
@@ -33,10 +33,10 @@ extension NSDate {
         if NSDate().monthsFrom(self) > 0 {
             return NSDate().monthsFrom(self).description + "m"
         }
-        if NSDate().weeksFrom(self)  > 0 { return NSDate().weeksFrom(self).description  + "w"
+        if NSDate().weeksFrom(self) > 0 { return NSDate().weeksFrom(self).description  + "w"
         }
-        if NSDate().daysFrom(self)   > 0 {
-            if daysFrom(self) == 1 { return "Yesterday" }
+        if NSDate().daysFrom(self) > 0 {
+            if NSDate().daysFrom(self) == 1 { return "Yesterday" }
             return NSDate().daysFrom(self).description + "d"
         }
         if NSDate().hoursFrom(self)   > 0 {
@@ -46,7 +46,7 @@ extension NSDate {
             return "\(NSDate().minutesFrom(self))m"
         }
         if NSDate().secondsFrom(self) > 0 {
-            if NSDate().secondsFrom(self) < 60 { return "Just now"  }
+            if NSDate().secondsFrom(self) < 60 { return "Just now" }
             return "\(NSDate().secondsFrom(self))s"
         }
         return ""

@@ -51,7 +51,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         composerAddButton.setTitle("Open", forState: .Normal)
         composerAddButton.setTitleColor(UIColor.blueColor(), forState: .Normal)
         composerAddButton.addTarget(self, action: "handleAddButtonTap:", forControlEvents: .TouchUpInside)
-        composerAddButton.titleLabel?.font = national
+        composerAddButton.titleLabel?.font = atlas
         composer.addSubview(composerAddButton)
         view.addSubview(composer)
         
