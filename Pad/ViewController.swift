@@ -117,7 +117,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
             }
         } else {
             tableViewController.notes = allNotes
-            composerAddButton.setTitle("Add", forState: .Normal)
+            composerAddButton.setTitle("Open", forState: .Normal)
         }
         
         tableViewController.tableView.reloadData()
