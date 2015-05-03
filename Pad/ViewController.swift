@@ -51,6 +51,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         composerAddButton.setTitle("Open", forState: .Normal)
         composerAddButton.setTitleColor(UIColor.blueColor(), forState: .Normal)
         composerAddButton.addTarget(self, action: "handleAddButtonTap:", forControlEvents: .TouchUpInside)
+        composerAddButton.titleLabel?.font = national
         composer.addSubview(composerAddButton)
         view.addSubview(composer)
         
@@ -244,6 +245,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
             tableViewController.notes = allNotes
             tableViewController.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: .None)
             tableViewController.tableView.reloadRowsAtIndexPaths([lastPosition], withRowAnimation: .None)
+            tableViewController.tableView.cellForRowAtIndexPath(lastPosition)?.detailTextLabel?.text = "Just now"
         }
         
         let operation = CKModifyRecordsOperation(recordsToSave: [note], recordIDsToDelete: nil)

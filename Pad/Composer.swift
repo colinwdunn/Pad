@@ -28,7 +28,7 @@ class Composer: UITextView, UITextViewDelegate {
     
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
-        font = UIFont.systemFontOfSize(18)
+        font = national
         delegate = self
         keyboardAppearance = .Dark
         text = placeholderText

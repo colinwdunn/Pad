@@ -46,20 +46,16 @@ class TableViewController: UITableViewController {
         var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
         cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
         cell.backgroundColor = UIColor.clearColor()
+        cell.textLabel?.font = national
+        cell.detailTextLabel?.font = national
         
         let text = notes[indexPath.row].objectForKey("Text") as! String
         cell.textLabel!.text = text
         
-        var date = (notes[indexPath.row].objectForKey("modificationDate") as? NSDate)?.relativeTime
-        
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.dateFormat = "EEEE, MMMM d"
-        
-        if date != nil {
-//            cell.detailTextLabel!.text = dateFormatter.stringFromDate(date)
+        if let date = (notes[indexPath.row].objectForKey("modificationDate") as? NSDate)?.relativeTime {
             cell.detailTextLabel?.text = date
         } else {
-            cell.detailTextLabel!.text = dateFormatter.stringFromDate(NSDate())
+            cell.detailTextLabel?.text = "Just now"
         }
         
         if indexPath.row == notes.count - 1 {

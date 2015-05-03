@@ -15,10 +15,12 @@ protocol NoteDelegate {
     func removeNote(note: CKRecord)
 }
 
-class NoteViewController: UIViewController {
-    var toolbar: UIView!
-    let done = UIButton()
+class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
+    var toolbar = UIView()
+    var divider = UIView()
+    var done = UIButton()
     let composer = Composer()
+    var edgeSwipe: UIScreenEdgePanGestureRecognizer!
     var note: CKRecord! {
         didSet {
             if let text = note.objectForKey("Text") as? String {
@@ -29,34 +31,35 @@ class NoteViewController: UIViewController {
         }
     }
     var delegate: NoteDelegate?
-    let window = UIScreen.mainScreen().bounds
+    let toolbarHeight:CGFloat = 50
+    let padding:CGFloat = 16
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         view.backgroundColor = UIColor.whiteColor()
         
-        let toolbarHeight:CGFloat = 50
-        let padding:CGFloat = 16
+        edgeSwipe = UIScreenEdgePanGestureRecognizer(target: self, action: "handleEdgeSwipe")
+        edgeSwipe.edges = UIRectEdge.Left
+        edgeSwipe.delegate = self
+        view.addGestureRecognizer(edgeSwipe)
         
         composer.alwaysBounceVertical = true
         composer.textContainerInset = UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding)
-        composer.frame = window
-        composer.frame.size.height -= toolbarHeight
+        composer.font = national
         view.addSubview(composer)
         
-        toolbar = UIView(frame: CGRectMake(0, window.height - toolbarHeight, window.width, toolbarHeight))
+        toolbar.frame = CGRectMake(0, UIScreen.mainScreen().bounds.height, UIScreen.mainScreen().bounds.width, toolbarHeight)
         toolbar.backgroundColor = UIColor.whiteColor()
         view.addSubview(toolbar)
         
-        let divider = UIView(frame: CGRectMake(padding, -1, toolbar.frame.width - padding * 2, 1))
         divider.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.25)
         toolbar.addSubview(divider)
         
-        done.frame = CGRectMake(toolbar.frame.width - 100, 0, 100, toolbarHeight)
         done.setTitle("Done", forState: .Normal)
         done.setTitleColor(UIColor.blueColor(), forState: .Normal)
         done.addTarget(self, action: "handleDoneTap", forControlEvents: .TouchUpInside)
+        done.titleLabel?.font = national
         toolbar.addSubview(done)
     }
     
@@ -71,11 +74,23 @@ class NoteViewController: UIViewController {
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        composer.frame = view.bounds
+        toolbar.frame = CGRectMake(0, view.bounds.height + 1, view.bounds.width, toolbarHeight)
+        done.frame = CGRectMake(toolbar.frame.width - 100, 0, 100, toolbarHeight)
+        divider.frame = CGRectMake(padding, -1, toolbar.frame.width - padding * 2, 1)
+    }
+    
     override func prefersStatusBarHidden() -> Bool {
         return true
     }
     
     func handleDoneTap() {
+        composer.resignFirstResponder()
+    }
+    
+    func handleEdgeSwipe() {
         let newString = composer.text
         if let oldString = note.objectForKey("Text") as? String {
             if newString.isEmpty {
@@ -95,15 +110,16 @@ class NoteViewController: UIViewController {
     }
     
     func keyboardWillShow(notification: NSNotification) {
+        println("Keyboard will show")
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
-            let textViewHeight = window.height - keyboardSize.height - toolbar.frame.height
-            toolbar.frame.origin.y = textViewHeight
-            composer.frame.size.height = textViewHeight
+            toolbar.frame.origin.y = view.frame.height - keyboardSize.height - toolbarHeight
+            composer.contentInset.bottom = keyboardSize.height + toolbarHeight
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {
-        toolbar.frame.origin.y = window.height - toolbar.frame.height
-        composer.frame = window
+        println("Keyboard will hide")
+        toolbar.frame.origin.y = view.frame.height + 1
+        composer.contentInset.bottom = 0
     }
 }
