@@ -47,6 +47,7 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
         composer.alwaysBounceVertical = true
         composer.textContainerInset = UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding)
         composer.font = atlas
+        composer.keyboardDismissMode = .Interactive
         view.addSubview(composer)
         
         toolbar.frame = CGRectMake(0, UIScreen.mainScreen().bounds.height, UIScreen.mainScreen().bounds.width, toolbarHeight)
@@ -110,7 +111,6 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     
     func keyboardWillShow(notification: NSNotification) {
-        println("Keyboard will show")
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
             toolbar.frame.origin.y = view.frame.height - keyboardSize.height - toolbarHeight
             composer.contentInset.bottom = keyboardSize.height + toolbarHeight
@@ -118,7 +118,6 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     
     func keyboardWillHide(notification: NSNotification) {
-        println("Keyboard will hide")
         toolbar.frame.origin.y = view.frame.height + 1
         composer.contentInset.bottom = 0
     }

@@ -26,6 +26,7 @@ class TableViewController: UITableViewController {
         tableView.delegate = self
         tableView.rowHeight = 50
         tableView.separatorStyle = .None
+        tableView.keyboardDismissMode = .Interactive
     }
     
     override func viewDidLayoutSubviews() {

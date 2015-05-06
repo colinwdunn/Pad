@@ -17,8 +17,8 @@
 		6282F1941AD8CC4B003114F0 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6282F1931AD8CC4B003114F0 /* CloudKit.framework */; };
 		6282F1961AD8DF31003114F0 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6282F1951AD8DF31003114F0 /* Note.swift */; };
 		629F9EC81AE3270C00699DA6 /* Composer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629F9EC71AE3270C00699DA6 /* Composer.swift */; };
-		62BA3E331AF5701F00766439 /* AtlasGrotesk-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 62BA3E321AF5701F00766439 /* AtlasGrotesk-Light.otf */; };
-		62BA3E351AF5706100766439 /* AtlasGrotesk-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 62BA3E341AF5706100766439 /* AtlasGrotesk-Regular.otf */; };
+		62E16A301AF83D8C006D9ECB /* AtlasGrotesk-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 62E16A2E1AF83D8C006D9ECB /* AtlasGrotesk-Regular.otf */; };
+		62E16A311AF83D8C006D9ECB /* AtlasGrotesk-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 62E16A2F1AF83D8C006D9ECB /* AtlasGrotesk-Light.otf */; };
 		62E56B441AEC523700B2D4B9 /* TableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E56B431AEC523700B2D4B9 /* TableViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -48,8 +48,8 @@
 		6282F1931AD8CC4B003114F0 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		6282F1951AD8DF31003114F0 /* Note.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
 		629F9EC71AE3270C00699DA6 /* Composer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Composer.swift; sourceTree = "<group>"; };
-		62BA3E321AF5701F00766439 /* AtlasGrotesk-Light.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AtlasGrotesk-Light.otf"; sourceTree = "<group>"; };
-		62BA3E341AF5706100766439 /* AtlasGrotesk-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AtlasGrotesk-Regular.otf"; sourceTree = "<group>"; };
+		62E16A2E1AF83D8C006D9ECB /* AtlasGrotesk-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AtlasGrotesk-Regular.otf"; sourceTree = "<group>"; };
+		62E16A2F1AF83D8C006D9ECB /* AtlasGrotesk-Light.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "AtlasGrotesk-Light.otf"; sourceTree = "<group>"; };
 		62E56B431AEC523700B2D4B9 /* TableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -162,8 +162,8 @@
 		62BA3E1C1AF5600300766439 /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
-				62BA3E321AF5701F00766439 /* AtlasGrotesk-Light.otf */,
-				62BA3E341AF5706100766439 /* AtlasGrotesk-Regular.otf */,
+				62E16A2E1AF83D8C006D9ECB /* AtlasGrotesk-Regular.otf */,
+				62E16A2F1AF83D8C006D9ECB /* AtlasGrotesk-Light.otf */,
 			);
 			name = Fonts;
 			sourceTree = "<group>";
@@ -254,10 +254,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62BA3E351AF5706100766439 /* AtlasGrotesk-Regular.otf in Resources */,
-				62BA3E331AF5701F00766439 /* AtlasGrotesk-Light.otf in Resources */,
 				6282F17B1AD8BED2003114F0 /* LaunchScreen.xib in Resources */,
 				620039AD1AEC861800B14F97 /* Images.xcassets in Resources */,
+				62E16A311AF83D8C006D9ECB /* AtlasGrotesk-Light.otf in Resources */,
+				62E16A301AF83D8C006D9ECB /* AtlasGrotesk-Regular.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

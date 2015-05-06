@@ -28,7 +28,7 @@ class Composer: UITextView, UITextViewDelegate {
     
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
-        font = atlas
+        font = atlasGroteskOfSize(20)
         delegate = self
         keyboardAppearance = .Dark
         text = placeholderText
@@ -45,6 +45,19 @@ class Composer: UITextView, UITextViewDelegate {
         text = placeholderText
         selectedTextRange = textRangeFromPosition(beginningOfDocument, toPosition: beginningOfDocument)
     }
+    
+    func textDidChange(text: String) {
+        let characterCount = count(text)
+        println(characterCount)
+        
+        if characterCount < 20 {
+            font = atlasGroteskOfSize(20)
+        } else if characterCount > 20 {
+            font = atlasGroteskOfSize(18)
+        } else if characterCount > 40 {
+            font = atlasGroteskOfSize(16)
+        }
+    }
 }
 
 extension Composer: UITextViewDelegate {
@@ -58,6 +71,7 @@ extension Composer: UITextViewDelegate {
         let currentText:NSString = textView.text
         let updatedText = (currentText == placeholderText) ? text : currentText.stringByReplacingCharactersInRange(range, withString: text)
         composerDelegate?.composerTextDidChange(updatedText)
+        textDidChange(updatedText)
         
         if count(updatedText) == 0 {
             self.text = placeholderText
