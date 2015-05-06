@@ -16,9 +16,6 @@ protocol NoteDelegate {
 }
 
 class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
-    var toolbar = UIView()
-    var divider = UIView()
-    var done = UIButton()
     let composer = Composer()
     var edgeSwipe: UIScreenEdgePanGestureRecognizer!
     var note: CKRecord! {
@@ -31,7 +28,6 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
         }
     }
     var delegate: NoteDelegate?
-    let toolbarHeight:CGFloat = 50
     let padding:CGFloat = 16
 
     override func viewDidLoad() {
@@ -49,19 +45,6 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
         composer.font = atlas
         composer.keyboardDismissMode = .Interactive
         view.addSubview(composer)
-        
-        toolbar.frame = CGRectMake(0, UIScreen.mainScreen().bounds.height, UIScreen.mainScreen().bounds.width, toolbarHeight)
-        toolbar.backgroundColor = UIColor.whiteColor()
-        view.addSubview(toolbar)
-        
-        divider.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.25)
-        toolbar.addSubview(divider)
-        
-        done.setTitle("Done", forState: .Normal)
-        done.setTitleColor(UIColor.blueColor(), forState: .Normal)
-        done.addTarget(self, action: "handleDoneTap", forControlEvents: .TouchUpInside)
-        done.titleLabel?.font = atlas
-        toolbar.addSubview(done)
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -78,17 +61,10 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         composer.frame = view.bounds
-        toolbar.frame = CGRectMake(0, view.bounds.height + 1, view.bounds.width, toolbarHeight)
-        done.frame = CGRectMake(toolbar.frame.width - 100, 0, 100, toolbarHeight)
-        divider.frame = CGRectMake(padding, -1, toolbar.frame.width - padding * 2, 1)
     }
     
     override func prefersStatusBarHidden() -> Bool {
         return true
-    }
-    
-    func handleDoneTap() {
-        composer.resignFirstResponder()
     }
     
     func handleEdgeSwipe() {
@@ -112,13 +88,11 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
     
     func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
-            toolbar.frame.origin.y = view.frame.height - keyboardSize.height - toolbarHeight
-            composer.contentInset.bottom = keyboardSize.height + toolbarHeight
+            composer.contentInset.bottom = keyboardSize.height
         }
     }
     
     func keyboardWillHide(notification: NSNotification) {
-        toolbar.frame.origin.y = view.frame.height + 1
         composer.contentInset.bottom = 0
     }
 }

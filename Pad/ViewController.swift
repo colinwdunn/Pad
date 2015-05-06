@@ -52,7 +52,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         composerAddButton.addTarget(self, action: "handleAddButtonTap:", forControlEvents: .TouchUpInside)
         composerAddButton.titleLabel?.font = atlas
         composer.addSubview(composerAddButton)
-        view.addSubview(composer)
+//        view.addSubview(composer)
         
         noteViewController.delegate = self
         
@@ -98,6 +98,8 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     override func prefersStatusBarHidden() -> Bool {
         return true
     }
+    
+    //MARK: Functions
     
     func composerTextDidChange(text: String) {
         searchResults = allNotes.filter({ (note: CKRecord) -> Bool in

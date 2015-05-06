@@ -50,13 +50,13 @@ class Composer: UITextView, UITextViewDelegate {
         let characterCount = count(text)
         println(characterCount)
         
-        if characterCount < 20 {
-            font = atlasGroteskOfSize(20)
-        } else if characterCount > 20 {
-            font = atlasGroteskOfSize(18)
-        } else if characterCount > 40 {
-            font = atlasGroteskOfSize(16)
-        }
+//        if characterCount < 20 {
+//            font = atlasGroteskOfSize(20)
+//        } else if characterCount > 20 {
+//            font = atlasGroteskOfSize(18)
+//        } else if characterCount > 40 {
+//            font = atlasGroteskOfSize(16)
+//        }
     }
 }
 
