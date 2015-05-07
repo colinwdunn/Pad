@@ -29,15 +29,6 @@ class TableViewController: UITableViewController {
         tableView.keyboardDismissMode = .Interactive
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-    }
-    
-    override func viewWillAppear(animated: Bool) {
-        super.viewWillAppear(animated)
-        println("View will appear")
-    }
-    
     //MARK: TableView Data Source
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return notes.count

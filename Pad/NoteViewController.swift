@@ -11,7 +11,6 @@ import CloudKit
 
 protocol NoteDelegate {
     func modifyNote(note: CKRecord)
-    func addNote(note: CKRecord)
     func removeNote(note: CKRecord)
 }
 
@@ -79,7 +78,8 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
         } else {
             if !newString.isEmpty {
                 note.setObject(newString, forKey: "Text")
-                delegate?.addNote(note)
+                println("Add note called")
+//                delegate?.addNote(note)
             }
         }
         composer.resignFirstResponder()

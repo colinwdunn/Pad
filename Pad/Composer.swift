@@ -48,7 +48,7 @@ class Composer: UITextView, UITextViewDelegate {
     
     func textDidChange(text: String) {
         let characterCount = count(text)
-        println(characterCount)
+//        println(characterCount)
         
 //        if characterCount < 20 {
 //            font = atlasGroteskOfSize(20)

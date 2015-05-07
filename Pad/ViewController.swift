@@ -9,7 +9,7 @@
 import UIKit
 import CloudKit
 
-class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate, TableViewDelegate {
+class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegate, ComposerAccessoryViewDelegate {
     let db = CKContainer.defaultContainer().privateCloudDatabase
     let defaults = NSUserDefaults.standardUserDefaults()
 
@@ -17,24 +17,24 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         didSet {
             if oldValue != nil {
                 if oldValue != allNotes {
-                    println("Saved notes to disk")
                     archiveNotes(allNotes)
                 }
             }
         }
     }
     var searchResults: [CKRecord]!
+    var searchResultsCount: Int!
     
     let noteViewController = NoteViewController()
     let kNotesKey = "Notes"
     
-    let composer = UIView()
-    let composerInput = Composer()
-    let composerAddButton = UIButton()
-    
     let tableViewController = TableViewController()
     
-    var keyboardSize: CGRect?
+    private let accessoryView = ComposerAccessoryView(frame: CGRectMake(0, 0, UIScreen.mainScreen().bounds.width, 200))
+    
+    override var inputAccessoryView: ComposerAccessoryView {
+        return accessoryView
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,17 +43,6 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         tableViewController.delegate = self
         view.addSubview(tableViewController.view)
         
-        composerInput.composerDelegate = self
-
-        composer.addSubview(composerInput)
-        composer.backgroundColor = UIColor.whiteColor()
-        composerAddButton.setTitle("Open", forState: .Normal)
-        composerAddButton.setTitleColor(UIColor.blueColor(), forState: .Normal)
-        composerAddButton.addTarget(self, action: "handleAddButtonTap:", forControlEvents: .TouchUpInside)
-        composerAddButton.titleLabel?.font = atlas
-        composer.addSubview(composerAddButton)
-//        view.addSubview(composer)
-        
         noteViewController.delegate = self
         
         allNotes = unarchiveNotes()
@@ -61,6 +50,8 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         loadItems()
         
         scrollToLastCell(false)
+        
+        accessoryView.delegate = self
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -76,77 +67,57 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        composerInput.becomeFirstResponder()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        composer.frame = CGRectMake(0, 0, view.frame.width, 200)
-        composerInput.frame = CGRectMake(8, 4, composer.frame.width - 8, composer.frame.height)
-        composerAddButton.frame = CGRectMake(view.frame.width - 80, composer.frame.height - 30, 80, 20)
+        accessoryView.frame = CGRectMake(0, 0, view.bounds.width, 200)
         tableViewController.view.frame = view.bounds
-        
-        if keyboardSize != nil {
-            tableViewController.tableView.contentInset.bottom = composer.frame.height + keyboardSize!.height
-            composer.frame.origin.y = view.bounds.height - tableViewController.tableView.rowHeight - keyboardSize!.height
-        } else {
-            tableViewController.tableView.contentInset.bottom = composer.frame.height
-            composer.frame.origin.y = view.bounds.height - tableViewController.tableView.rowHeight
-        }
     }
     
     override func prefersStatusBarHidden() -> Bool {
         return true
     }
     
-    //MARK: Functions
+    override func canBecomeFirstResponder() -> Bool {
+        return true
+    }
     
+    //MARK: Composer Delegate
     func composerTextDidChange(text: String) {
         searchResults = allNotes.filter({ (note: CKRecord) -> Bool in
             let query = note.objectForKey("Text") as! String
-            let match = query.rangeOfString(text, options: NSStringCompareOptions.CaseInsensitiveSearch)
+            let match = query.rangeOfString(text, options: .CaseInsensitiveSearch)
             return match != nil
         })
         
         if count(text) > 0 {
             tableViewController.notes = searchResults
-            
-            if searchResults.count > 0 {
-                composerAddButton.setTitle("Open", forState: .Normal)
-            } else {
-                composerAddButton.setTitle("Add", forState: .Normal)
-            }
         } else {
             tableViewController.notes = allNotes
-            composerAddButton.setTitle("Open", forState: .Normal)
             searchResults = nil
         }
         
         tableViewController.tableView.reloadData()
         scrollToLastCell(false)
-    }
-    
-    func handleAddButtonTap(button: UIButton) {
-        if button.currentTitle == "Add" {
-            let note = CKRecord(recordType: Note.recordType)
-            note.setObject(composerInput.text, forKey: "Text")
-            composerInput.clearInput()
-            addNote(note)
+        
+        if searchResults != nil {
+            searchResultsCount = searchResults!.count
         } else {
-            if searchResults != nil {
-                let note = searchResults[searchResults.count - 1]
-                presentNote(note)
-            } else {
-                let note = allNotes[allNotes.count - 1]
-                presentNote(note)
-            }
+            searchResultsCount = 0
         }
     }
     
+    func openNote() {
+        let note = tableViewController.notes.last as CKRecord!
+        presentNote(note)
+    }
+    
+    //MARK: Functions
     func scrollToLastCell(animated: Bool) {
         if tableViewController.notes.count > 0 {
             let lastCell = NSIndexPath(forItem: tableViewController.notes.count - 1, inSection: 0)
-            tableViewController.tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: UITableViewScrollPosition.Bottom, animated: animated)
+            tableViewController.tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: .Bottom, animated: animated)
        }
     }
     
@@ -157,18 +128,13 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     
     func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
-            composer.frame.origin.y = view.frame.height - keyboardSize.height - composer.frame.height
-            tableViewController.tableView.contentInset.bottom = keyboardSize.height + composer.frame.height
-            self.keyboardSize = keyboardSize
+            tableViewController.tableView.contentInset.bottom = keyboardSize.height
         }
-        
         scrollToLastCell(true)
     }
     
     func keyboardWillHide(notification: NSNotification) {
-        composer.frame.origin.y = view.frame.height - composer.frame.height
-        tableViewController.tableView.contentInset.bottom = composer.frame.height
-        keyboardSize = nil
+        tableViewController.tableView.contentInset.bottom = 0
     }
     
     //MARK: CloudKit
@@ -191,11 +157,15 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
         }
     }
     
-    func addNote(note: CKRecord) {
+    func addNote(text: String) {
+        let note = CKRecord(recordType: Note.recordType)
+        note.setObject(text, forKey: "Text")
+    
+        tableViewController.notes.append(note)
         allNotes.append(note)
-        tableViewController.notes = allNotes
+        
         let indexPath = NSIndexPath(forRow: allNotes.count - 1, inSection: 0)
-        tableViewController.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade)
+        tableViewController.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
         scrollToLastCell(true)
         
         db.saveRecord(note, completionHandler: { (record, error) -> Void in
@@ -215,7 +185,6 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
             tableViewController.notes.removeAtIndex(index)
             let indexPath = NSIndexPath(forItem: index, inSection: 0)
             tableViewController.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
-//            scrollToLastCell(false)
         }
  
         db.deleteRecordWithID(note.recordID) { (record, error) -> Void in
@@ -274,6 +243,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, ComposerDelegate
     func archiveNotes(notes: [CKRecord]) {
         let data = NSKeyedArchiver.archivedDataWithRootObject(allNotes)
         self.defaults.setObject(data, forKey: kNotesKey)
+        println("Saved notes to disk")
     }
     
     override func encodeWithCoder(coder: NSCoder) {
