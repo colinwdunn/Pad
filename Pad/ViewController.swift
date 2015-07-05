@@ -30,7 +30,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
     
     let tableViewController = TableViewController()
     
-    private let accessoryView = ComposerAccessoryView(frame: CGRectMake(0, 0, UIScreen.mainScreen().bounds.width, 200))
+    private let accessoryView = ComposerAccessoryView(frame: CGRectMake(0, 0, UIScreen.mainScreen().bounds.width, 50))
     
     override var inputAccessoryView: ComposerAccessoryView {
         return accessoryView
@@ -118,6 +118,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
         if tableViewController.notes.count > 0 {
             let lastCell = NSIndexPath(forItem: tableViewController.notes.count - 1, inSection: 0)
             tableViewController.tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: .Bottom, animated: animated)
+            println("Scroll to last cell \(animated)")
        }
     }
     
@@ -130,7 +131,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
             tableViewController.tableView.contentInset.bottom = keyboardSize.height
         }
-        scrollToLastCell(true)
+//        scrollToLastCell(true)
     }
     
     func keyboardWillHide(notification: NSNotification) {

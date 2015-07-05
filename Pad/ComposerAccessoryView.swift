@@ -67,20 +67,6 @@ class ComposerAccessoryView: UIView, ComposerDelegate {
         } else {
             delegate?.openNote()
         }
-//        if button.currentTitle == "Add" {
-//            let note = CKRecord(recordType: Note.recordType)
-//            note.setObject(composerInput.text, forKey: "Text")
-//            composerInput.clearInput()
-//            addNote(note)
-//        } else {
-//            if searchResults != nil {
-//                let note = searchResults[searchResults.count - 1]
-//                presentNote(note)
-//            } else {
-//                let note = allNotes[allNotes.count - 1]
-//                presentNote(note)
-//            }
-//        }
     }
 
 }
