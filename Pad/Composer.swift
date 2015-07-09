@@ -12,7 +12,7 @@ protocol ComposerDelegate {
     func composerTextDidChange(text: String)
 }
 
-class Composer: UITextView, UITextViewDelegate {
+class Composer: UITextView {
     var composerDelegate: ComposerDelegate?
     var placeholderText = "Open or add a note…"
     let placeholderTextColor = UIColor.lightGrayColor()
@@ -47,7 +47,7 @@ class Composer: UITextView, UITextViewDelegate {
     }
     
     func textDidChange(text: String) {
-        let characterCount = count(text)
+//        let characterCount = text.characters.count
 //        println(characterCount)
         
 //        if characterCount < 20 {
@@ -73,12 +73,12 @@ extension Composer: UITextViewDelegate {
         composerDelegate?.composerTextDidChange(updatedText)
         textDidChange(updatedText)
         
-        if count(updatedText) == 0 {
+        if updatedText.characters.count == 0 {
             self.text = placeholderText
             self.textColor = placeholderTextColor
             selectedTextRange = textRangeFromPosition(beginningOfDocument, toPosition: beginningOfDocument)
             return false
-        } else if textView.textColor == placeholderTextColor && count(text) > 0 {
+        } else if textView.textColor == placeholderTextColor && text.characters.count > 0 {
             self.text = nil
             self.textColor = UIColor.blackColor()
         }

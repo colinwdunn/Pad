@@ -48,7 +48,7 @@ class ComposerAccessoryView: UIView, ComposerDelegate {
     func composerTextDidChange(text: String) {
         delegate?.composerTextDidChange(text)
         
-        if count(text) > 0 {
+        if text.characters.count > 0 {
             if delegate?.searchResultsCount > 0 {
                 composerAddButton.setTitle("Open", forState: .Normal)
             } else {

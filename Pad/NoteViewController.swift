@@ -16,7 +16,7 @@ protocol NoteDelegate {
 
 class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
     let composer = Composer()
-    var edgeSwipe: UIScreenEdgePanGestureRecognizer!
+    var panGesture: UIPanGestureRecognizer!
     var note: CKRecord! {
         didSet {
             if let text = note.objectForKey("Text") as? String {
@@ -32,12 +32,7 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor.whiteColor()
-        
-        edgeSwipe = UIScreenEdgePanGestureRecognizer(target: self, action: "handleEdgeSwipe")
-        edgeSwipe.edges = UIRectEdge.Left
-        edgeSwipe.delegate = self
-        view.addGestureRecognizer(edgeSwipe)
+        view.backgroundColor = UIColor.whiteColor() 
         
         composer.alwaysBounceVertical = true
         composer.textContainerInset = UIEdgeInsets(top: padding, left: padding, bottom: padding, right: padding)
@@ -55,6 +50,25 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         NSNotificationCenter.defaultCenter().removeObserver(self)
+        
+        let newString = composer.text
+        if let oldString = note.objectForKey("Text") as? String {
+            if newString.isEmpty {
+                delegate?.removeNote(note)
+                print("Remove note")
+            } else if newString != oldString {
+                note!.setObject(composer.text, forKey: "Text")
+                delegate?.modifyNote(note!)
+                print("Modify note")
+            }
+        }
+//        else {
+//            if !newString.isEmpty {
+//                note.setObject(newString, forKey: "Text")
+//                println("Add note")
+//                //delegate?.addNote(note)
+//            }
+//        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -64,26 +78,6 @@ class NoteViewController: UIViewController, UIGestureRecognizerDelegate {
     
     override func prefersStatusBarHidden() -> Bool {
         return true
-    }
-    
-    func handleEdgeSwipe() {
-        let newString = composer.text
-        if let oldString = note.objectForKey("Text") as? String {
-            if newString.isEmpty {
-                delegate?.removeNote(note)
-            } else if newString != oldString {
-                note!.setObject(composer.text, forKey: "Text")
-                delegate?.modifyNote(note!)
-            }
-        } else {
-            if !newString.isEmpty {
-                note.setObject(newString, forKey: "Text")
-                println("Add note called")
-//                delegate?.addNote(note)
-            }
-        }
-        composer.resignFirstResponder()
-        navigationController?.popToRootViewControllerAnimated(true)
     }
     
     func keyboardWillShow(notification: NSNotification) {

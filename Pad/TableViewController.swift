@@ -35,7 +35,7 @@ class TableViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as! UITableViewCell
+        var cell = tableView.dequeueReusableCellWithIdentifier(Note.identifier) as UITableViewCell!
         cell = UITableViewCell(style: UITableViewCellStyle.Value1, reuseIdentifier: Note.identifier)
         cell.backgroundColor = UIColor.clearColor()
         cell.textLabel?.font = atlas

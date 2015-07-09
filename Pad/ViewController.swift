@@ -9,10 +9,10 @@
 import UIKit
 import CloudKit
 
-class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegate, ComposerAccessoryViewDelegate {
+class ViewController: UIViewController, NoteDelegate, TableViewDelegate, ComposerAccessoryViewDelegate, UIGestureRecognizerDelegate {
+    let transitionManger = TransitionManger()
     let db = CKContainer.defaultContainer().privateCloudDatabase
     let defaults = NSUserDefaults.standardUserDefaults()
-
     var allNotes: [CKRecord]! {
         didSet {
             if oldValue != nil {
@@ -91,7 +91,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
             return match != nil
         })
         
-        if count(text) > 0 {
+        if text.characters.count > 0 {
             tableViewController.notes = searchResults
         } else {
             tableViewController.notes = allNotes
@@ -118,20 +118,23 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
         if tableViewController.notes.count > 0 {
             let lastCell = NSIndexPath(forItem: tableViewController.notes.count - 1, inSection: 0)
             tableViewController.tableView.scrollToRowAtIndexPath(lastCell, atScrollPosition: .Bottom, animated: animated)
-            println("Scroll to last cell \(animated)")
+            print("Scroll to last cell, with animation: \(animated)")
        }
     }
     
     func presentNote(note: CKRecord) {
         noteViewController.note = note
-        navigationController?.pushViewController(noteViewController, animated: true)
+//        navigationController?.pushViewController(noteViewController, animated: true)
+        noteViewController.modalPresentationStyle = .Custom
+        noteViewController.transitioningDelegate = transitionManger
+        transitionManger.presentingController = noteViewController
+        self.presentViewController(noteViewController, animated: true, completion: nil)
     }
     
     func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue)?.CGRectValue() {
             tableViewController.tableView.contentInset.bottom = keyboardSize.height
         }
-//        scrollToLastCell(true)
     }
     
     func keyboardWillHide(notification: NSNotification) {
@@ -145,13 +148,13 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
         query.sortDescriptors = [NSSortDescriptor(key: "modificationDate", ascending: true)]
         db.performQuery(query, inZoneWithID: nil) { (results, error) -> Void in
             if error != nil {
-                println(error.localizedDescription)
+                print(error!.localizedDescription)
             }
             
             dispatch_async(dispatch_get_main_queue(), { () -> Void in
                 //TODO: If local notes are more recent save local copy to iCloud
                 //If no internet connection don't replace local copy
-                self.allNotes = results as! [CKRecord]
+                self.allNotes = results as [CKRecord]!
                 self.tableViewController.tableView.reloadData()
                 self.scrollToLastCell(true)
             })
@@ -171,18 +174,18 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
         
         db.saveRecord(note, completionHandler: { (record, error) -> Void in
             if error != nil {
-                println(error.localizedDescription)
+                print(error!.localizedDescription)
                 //TODO: Show add error in UI
             }
         })
     }
     
     func removeNote(note: CKRecord) {
-        if let index = find(allNotes, note) {
+        if let index = allNotes.indexOf(note) {
             allNotes.removeAtIndex(index)
         }
 
-        if let index = find(tableViewController.notes, note) {
+        if let index = tableViewController.notes.indexOf(note) {
             tableViewController.notes.removeAtIndex(index)
             let indexPath = NSIndexPath(forItem: index, inSection: 0)
             tableViewController.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
@@ -190,19 +193,19 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
  
         db.deleteRecordWithID(note.recordID) { (record, error) -> Void in
             if error != nil {
-                println(error.localizedDescription)
+                print(error!.localizedDescription)
                 //TODO: Show delete error in UI
             }
         }
     }
     
     func modifyNote(note: CKRecord) {
-        if let index = find(allNotes, note) {
+        if let index = allNotes.indexOf(note) {
             allNotes.removeAtIndex(index)
             allNotes.append(note)
         }
         
-        if let index = find(tableViewController.notes, note) {
+        if let index = tableViewController.notes.indexOf(note) {
             let indexPath = NSIndexPath(forRow: index, inSection: 0)
             let lastPosition = NSIndexPath(forRow: tableViewController.notes.count - 1, inSection: 0)
             
@@ -225,7 +228,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
         let operation = CKModifyRecordsOperation(recordsToSave: [note], recordIDsToDelete: nil)
         operation.modifyRecordsCompletionBlock = { saved, deleted, error in
             if error != nil {
-                println(error.localizedDescription)
+                print(error!.localizedDescription)
                 //TODO: Show modify error in UI
             }
         }
@@ -244,7 +247,7 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
     func archiveNotes(notes: [CKRecord]) {
         let data = NSKeyedArchiver.archivedDataWithRootObject(allNotes)
         self.defaults.setObject(data, forKey: kNotesKey)
-        println("Saved notes to disk")
+        print("Saved notes to disk")
     }
     
     override func encodeWithCoder(coder: NSCoder) {
@@ -254,25 +257,28 @@ class ViewController: UIViewController, NSCoding, NoteDelegate, TableViewDelegat
 
 class Extensions: NSObject {}
 
-extension CKRecord: Equatable {}
+extension CKRecord {}
 public func ==( lhs: CKRecord, rhs: CKRecord ) -> Bool {
     return lhs.recordID == rhs.recordID
 }
 
 extension NSDate {
-    func yearsFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.CalendarUnitYear, fromDate: date, toDate: self, options: nil).year }
-    func monthsFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.CalendarUnitMonth, fromDate: date, toDate: self, options: nil).month }
-    func weeksFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.CalendarUnitWeekOfYear, fromDate: date, toDate: self, options: nil).weekOfYear }
-    func daysFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.CalendarUnitDay, fromDate: date, toDate: self, options: nil).day }
-    func hoursFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.CalendarUnitHour, fromDate: date, toDate: self, options: nil).hour }
-    func minutesFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.CalendarUnitMinute, fromDate: date, toDate: self, options: nil).minute }
-    func secondsFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.CalendarUnitSecond, fromDate: date, toDate: self, options: nil).second }
+    func yearsFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.Year, fromDate: date, toDate: self, options: []).year }
+    func monthsFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.Month, fromDate: date, toDate: self, options: []).month }
+    func weeksFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.WeekOfYear, fromDate: date, toDate: self, options: []).weekOfYear }
+    func daysFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.Day, fromDate: date, toDate: self, options: []).day }
+    func hoursFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.Hour, fromDate: date, toDate: self, options: []).hour }
+    func minutesFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.Minute, fromDate: date, toDate: self, options: []).minute }
+    func secondsFrom(date:NSDate) -> Int { return NSCalendar.currentCalendar().components(NSCalendarUnit.Second, fromDate: date, toDate: self, options: []).second }
     var relativeTime: String {
         if NSDate().yearsFrom(self)  > 0 {
             return NSDate().yearsFrom(self).description  + "y"
         }
         if NSDate().monthsFrom(self) > 0 {
-            return NSDate().monthsFrom(self).description + "m"
+//            let months = NSDate().monthsFrom(self)
+            let dateFormatter = NSDateFormatter()
+            dateFormatter.dateFormat = "M/d/yy"
+            return dateFormatter.stringFromDate(self)
         }
         if NSDate().weeksFrom(self) > 0 { return NSDate().weeksFrom(self).description  + "w"
         }
